@@ -1,4 +1,4 @@
-import justpynew as jp
+import justpy as jp
 # import justpy as jp
 
 
