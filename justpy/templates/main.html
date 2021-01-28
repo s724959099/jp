@@ -11,6 +11,7 @@
 
   var websocket_ready = false;
 
+  {#todo #}
   {% include 'js/event_handler.js' %}
   {% include 'js/html_component.js' %}
   {% include 'js/quasar_component.js' %}
@@ -21,7 +22,7 @@
   {% if page_options.title is not none %}
     document.title = '{{ page_options.title }}';
   {%endif %}
-
+  {#  todo #}
   {% if page_options.display_url is not none %}
     window.history.pushState("", "", '{{ page_options.display_url }}');
   {%endif %}
@@ -46,6 +47,7 @@
   {% endfor %}
 
   if (use_websockets) {
+    {# websocket #}
     console.log(location.protocol + ' Domain: ' + document.domain);
     if (location.protocol === 'https:') {
       var protocol_string = 'wss://'
