@@ -1,13 +1,14 @@
+# todo remove startlette
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse
-from starlette.responses import PlainTextResponse
 from starlette.endpoints import WebSocketEndpoint
 from starlette.endpoints import HTTPEndpoint
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
-from starlette.staticfiles import StaticFiles
-from starlette.templating import Jinja2Templates
+from fastapi.templating import Jinja2Templates
 from starlette.config import Config
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from itsdangerous import Signer
 from .htmlcomponents import *
 from .chartcomponents import *
@@ -80,9 +81,10 @@ template_options = {'tailwind': TAILWIND, 'quasar': QUASAR, 'quasar_version': QU
                     'static_name': STATIC_NAME, 'component_file_list': component_file_list, 'no_internet': NO_INTERNET}
 logging.basicConfig(level=LOGGING_LEVEL, format='%(levelname)s %(module)s: %(message)s')
 
-app = Starlette(debug=DEBUG)
+app = FastAPI(debug=DEBUG)
 app.mount(STATIC_ROUTE, StaticFiles(directory=STATIC_DIRECTORY), name=STATIC_NAME)
 app.mount('/templates', StaticFiles(directory=current_dir + '/templates'), name='templates')
+# Handles GZip responses for any request that includes "gzip" in the Accept-Encoding header.
 app.add_middleware(GZipMiddleware)
 if SSL_KEYFILE and SSL_CERTFILE:
     app.add_middleware(HTTPSRedirectMiddleware)
@@ -194,38 +196,42 @@ class Homepage(HTTPEndpoint):
         #     response.set_cookie(SESSION_COOKIE_NAME, cookie_value, max_age=COOKIE_MAX_AGE, httponly=True)
         #     for k, v in load_page.cookies.items():
         #         response.set_cookie(k, v, max_age=COOKIE_MAX_AGE, httponly=True)
+
+        # 延遲
         if LATENCY:
             await asyncio.sleep(LATENCY / 1000)
         return response
 
     async def post(self, request):
+        # todo
         # Handles post method. Used in Ajax mode for events when websockets disabled
         if request['path'] == '/zzz_justpy_ajax':
             data_dict = await request.json()
             # {'type': 'event', 'event_data': {'event_type': 'beforeunload', 'page_id': 0}}
+            # todo
             if data_dict['event_data']['event_type'] == 'beforeunload':
                 return await self.on_disconnect(data_dict['event_data']['page_id'])
 
-            session_cookie = request.cookies.get(SESSION_COOKIE_NAME)
-            if SESSIONS and session_cookie:
-                session_id = cookie_signer.unsign(session_cookie).decode("utf-8")
-                data_dict['event_data']['session_id'] = session_id
+            # session_cookie = request.cookies.get(SESSION_COOKIE_NAME)
+            # if SESSIONS and session_cookie:
+            #     session_id = cookie_signer.unsign(session_cookie).decode("utf-8")
+            #     data_dict['event_data']['session_id'] = session_id
 
             # data_dict['event_data']['session'] = request.session
             msg_type = data_dict['type']
-            data_dict['event_data']['msg_type'] = msg_type
+            # data_dict['event_data']['msg_type'] = msg_type
             page_event = True if msg_type == 'page_event' else False
             result = await handle_event(data_dict, com_type=1, page_event=page_event)
-            if result:
-                if LATENCY:
-                    await asyncio.sleep(LATENCY / 1000)
-                return JSONResponse(result)
-            else:
+            if not result:
                 return JSONResponse(False)
+            if LATENCY:
+                await asyncio.sleep(LATENCY / 1000)
+            return JSONResponse(result)
 
     async def on_disconnect(self, page_id):
-        logging.debug(f'In disconnect Homepage')
-        await WebPage.instances[page_id].on_disconnect()  # Run the specific page disconnect function
+        logging.info(f'In disconnect Homepage')
+        if page_id in WebPage.instances:
+            await WebPage.instances[page_id].on_disconnect()  # Run the specific page disconnect function
         return JSONResponse(False)
 
 
@@ -270,7 +276,7 @@ class JustpyEvents(WebSocketEndpoint):
                 session_id = cookie_signer.unsign(session_cookie).decode("utf-8")
                 data_dict['event_data']['session_id'] = session_id
             # await self._event(data_dict)
-            data_dict['event_data']['msg_type'] = msg_type
+            # data_dict['event_data']['msg_type'] = msg_type
             page_event = True if msg_type == 'page_event' else False
             WebPage.loop.create_task(handle_event(data_dict, com_type=0, page_event=page_event))
             return
@@ -280,7 +286,7 @@ class JustpyEvents(WebSocketEndpoint):
             if SESSIONS and session_cookie:
                 session_id = cookie_signer.unsign(session_cookie).decode("utf-8")
                 data_dict['event_data']['session_id'] = session_id
-            data_dict['event_data']['msg_type'] = msg_type
+            # data_dict['event_data']['msg_type'] = msg_type
             WebPage.loop.create_task(handle_event(data_dict, com_type=0, page_event=True))
             return
 

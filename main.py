@@ -1,5 +1,4 @@
 import justpy as jp
-# import justpy as jp
 
 
 def my_click(self, msg):
@@ -13,4 +12,4 @@ def event_demo():
     return wp
 
 
-jp.justpy(event_demo)
+jp.justpy(event_demo, websockets=False)

@@ -59,6 +59,7 @@ class WebPage:
         self.head_html = ''
         self.body_html = ''
         # If html attribute is not empty, sets html of page directly
+        # todo 什麼時候有? raw html tag?
         self.html = ''
         self.body_style = ''
         self.body_classes = ''
