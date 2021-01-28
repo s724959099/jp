@@ -1,5 +1,5 @@
 import justpynew as jp
-import justpy as jp
+# import justpy as jp
 
 
 def my_click(self, msg):
