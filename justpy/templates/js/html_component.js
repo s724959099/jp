@@ -4,11 +4,12 @@
 Vue.component('html_component', {
 
     render: function (h) {
+        let comps = []
         if (this.jp_props.hasOwnProperty('text')) {
-            var comps = [this.jp_props.text];
-        } else comps = [];
+            comps = [this.jp_props.text];
+        }
 
-        for (var i = 0; i < this.jp_props.object_props.length; i++) {
+        for (let i = 0; i < this.jp_props.object_props.length; i++) {
             if (this.jp_props.object_props[i].show) {
                 comps.push(h(this.jp_props.object_props[i].vue_type, {
                     props: {
@@ -36,7 +37,7 @@ Vue.component('html_component', {
             description_object['class'] = this.jp_props.classes;
         }
 
-        var event_description = {};
+        let event_description = {};
         for (i = 0; i < this.jp_props.events.length; i++) {
             if (!this.jp_props.events[i].includes('__'))
                 event_description[this.jp_props.events[i]] = this.eventFunction
@@ -75,27 +76,27 @@ Vue.component('html_component', {
 
             }
             if (event.type == 'submit') {
-                var form_reference = this.$el;
-                var props = this.$props;
+                let form_reference = this.$el;
+                let props = this.$props;
                 event.preventDefault();    //stop form from being submitted in the normal way
                 event.stopPropagation();
-                var form_elements_list = [];
-                var form_elements = form_reference.elements;
-                var reader = new FileReader();
-                var file_readers = [];
-                var reader_ready = [];
-                var file_content = [];
-                var file_element_position = null;
+                let form_elements_list = [];
+                let form_elements = form_reference.elements;
+                let reader = new FileReader();
+                let file_readers = [];
+                let reader_ready = [];
+                let file_content = [];
+                let file_element_position = null;
 
-                for (var i = 0; i < form_elements.length; i++) {
-                    var attributes = form_elements[i].attributes;
-                    var attr_dict = {};
+                for (let i = 0; i < form_elements.length; i++) {
+                    let attributes = form_elements[i].attributes;
+                    let attr_dict = {};
                     attr_dict['html_tag'] = form_elements[i].tagName.toLowerCase();
-                    for (var j = 0; j < attributes.length; j++) {
-                        var attr = attributes[j];
+                    for (let j = 0; j < attributes.length; j++) {
+                        let attr = attributes[j];
                         attr_dict[attr.name] = attr.value;
                         if (attr.name == 'type') {
-                            var input_type = attr.value;
+                            let input_type = attr.value;
                         }
                     }
                     attr_dict['value'] = form_elements[i].value;
@@ -160,11 +161,11 @@ Vue.component('html_component', {
             }
         }),
         animateFunction: (function () {
-            var animation = this.$props.jp_props.animation;
-            var element = this.$el;
+            let animation = this.$props.jp_props.animation;
+            let element = this.$el;
             element.classList.add('animated', animation);
             element.classList.remove('hidden');
-            var event_func = function () {
+            let event_func = function () {
                 element.classList.remove('animated', animation);
                 if (animation.includes('Out')) {
                     element.classList.add('hidden');

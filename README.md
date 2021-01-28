@@ -34,4 +34,26 @@ page_id->WebPage
  'text']
 
 
+animation: false
+attrs: (...)
+class_name: (...)
+classes: (...)
+debug: (...)
+directives: (...)
+event_modifiers: (...)
+event_propagation: (...)
+events: (...)
+html_tag: (...)
+id: (...)
+inner_html: (...)
+object_props: (...)
+scoped_slots: (...)
+set_focus: (...)
+show: (...)
+style: (...)
+text: (...)
+transition: (...)
+vue_type: (...)
+
+
 ```
