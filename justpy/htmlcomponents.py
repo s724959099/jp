@@ -56,12 +56,15 @@ class WebPage:
         self.components = []  # list of direct children components on page
         self.cookies = {}
         self.css = ''
+        # todo 什麼時候呢
         self.head_html = ''
         self.body_html = ''
         # If html attribute is not empty, sets html of page directly
         # todo 什麼時候有? raw html tag?
         self.html = ''
+        # todo 什麼時候呢
         self.body_style = ''
+        # todo 什麼時候呢
         self.body_classes = ''
         self.reload_interval = None
         self.events = []
