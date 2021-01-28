@@ -4,7 +4,7 @@ var cached_grid_def = {};
 
 Vue.component('grid', {
     template:
-        `<div  v-bind:id="jp_props.id" :class="jp_props.classes"  :style="jp_props.style"  ></div>`,
+        `<div  v-bind:id="jp_props.id" :class="jp_props.class_"  :style="jp_props.style"  ></div>`,
     methods: {
         grid_change() {
             var j = JSON.stringify(this.$props.jp_props.def);

@@ -27,7 +27,7 @@ class AgGrid(JustpyBaseComponent):
 
     def __init__(self, **kwargs):
         self.options = Dict(self.default_grid_options)
-        self.classes = ''
+        self.class_ = ''
         self.style = 'height: 99vh; width: 99%; margin: 0.25rem; padding: 0.25rem;'
         self.evaluate = []  # Fields for evaluation
         self.show = True
@@ -112,7 +112,7 @@ class AgGrid(JustpyBaseComponent):
         d['vue_type'] = self.vue_type
         d['id'] = self.id
         d['show'] = self.show
-        d['classes'] = self.classes + ' ' + self.theme
+        d['class_'] = self.class_ + ' ' + self.theme
         d['style'] = self.style
         d['def'] = self.options
         d['auto_size'] = self.auto_size

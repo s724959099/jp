@@ -7,7 +7,7 @@ var tooltip_timeout = null;
 Vue.component('chart', {
 
     template:
-        `<div v-bind:id="jp_props.id" :class="jp_props.classes"  :style="jp_props.style" ></div>`,
+        `<div v-bind:id="jp_props.id" :class="jp_props.class_"  :style="jp_props.style" ></div>`,
     methods: {
         graph_change() {
             cached_graph_def[this.$props.jp_props.id] = JSON.stringify(this.$props.jp_props.def);

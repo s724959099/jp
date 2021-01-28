@@ -90,7 +90,7 @@ if SSL_KEYFILE and SSL_CERTFILE:
 
 def initial_func(request):
     wp = WebPage()
-    Div(text='JustPy says: Page not found', classes='inline-block text-5xl m-3 p-3 text-white bg-blue-600', a=wp)
+    Div(text='JustPy says: Page not found', class_='inline-block text-5xl m-3 p-3 text-white bg-blue-600', a=wp)
     return wp
 
 
@@ -100,7 +100,7 @@ startup_func = None
 
 def server_error_func(request):
     wp = WebPage()
-    Div(text='JustPy says: 500 - Server Error', classes='inline-block text-5xl m-3 p-3 text-white bg-red-600', a=wp)
+    Div(text='JustPy says: 500 - Server Error', class_='inline-block text-5xl m-3 p-3 text-white bg-red-600', a=wp)
     return wp
 
 

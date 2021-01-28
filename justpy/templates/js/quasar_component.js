@@ -46,8 +46,8 @@ Vue.component('quasar_component', {
             ref: 'r' + this.jp_props.id
         };
 
-        if (this.jp_props.classes) {
-            description_object['class'] = this.jp_props.classes;
+        if (this.jp_props.class_) {
+            description_object['class'] = this.jp_props.class_;
         }
 
         var event_description = {};
@@ -285,7 +285,7 @@ Vue.component('quasar_component', {
             let el = this.$refs['r' + this.$props.jp_props.id];
             const props = this.$props.jp_props;
             if (el.$el) el = el.$el;
-            const class_list = props.classes.trim().replace(/\s\s+/g, ' ').split(' ');
+            const class_list = props.class_.trim().replace(/\s\s+/g, ' ').split(' ');
             // Transition change from hidden to not hidden
             if (this.previous_display == 'none' && (!class_list.includes('hidden'))) {
 
@@ -327,7 +327,7 @@ Vue.component('quasar_component', {
             let el = this.$refs['r' + this.$props.jp_props.id];
             const props = this.$props.jp_props;
             if (el.$el) el = el.$el;
-            const class_list = props.classes.trim().replace(/\s\s+/g, ' ').split(' ');
+            const class_list = props.class_.trim().replace(/\s\s+/g, ' ').split(' ');
 
 
             let load_list = props.transition.load.trim().replace(/\s\s+/g, ' ').split(' ');

@@ -36,7 +36,7 @@ class HighCharts(JustpyBaseComponent):
         self.options = Dict()
         self.stock = False
         self.use_cache = True
-        self.classes = ''
+        self.class_ = ''
         self.style = ''
         self.show = True
         self.event_propagation = True
@@ -151,7 +151,7 @@ class HighCharts(JustpyBaseComponent):
         d['stock'] = self.stock
         d['use_cache'] = self.use_cache
         d['show'] = self.show
-        d['classes'] = self.classes
+        d['class_'] = self.class_
         d['style'] = self.style
         d['event_propagation'] = self.event_propagation
         d['def'] = self.options

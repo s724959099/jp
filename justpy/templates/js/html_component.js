@@ -19,7 +19,7 @@ Vue.component('html_component', {
             }
         }
 
-        description_object = {
+        let description_object = {
             style: this.jp_props.style,
             attrs: this.jp_props.attrs,
             domProps: {
@@ -32,13 +32,13 @@ Vue.component('html_component', {
             slot: this.jp_props.slot,
             ref: 'r' + this.jp_props.id
         };
-
-        if (this.jp_props.classes) {
-            description_object['class'] = this.jp_props.classes;
+        debugger;
+        if (this.jp_props.class_) {
+            description_object['class'] = this.jp_props.class_;
         }
 
         let event_description = {};
-        for (i = 0; i < this.jp_props.events.length; i++) {
+        for (let i = 0; i < this.jp_props.events.length; i++) {
             if (!this.jp_props.events[i].includes('__'))
                 event_description[this.jp_props.events[i]] = this.eventFunction
         }
@@ -229,7 +229,7 @@ Vue.component('html_component', {
             let el = this.$refs['r' + this.$props.jp_props.id];
             const props = this.$props.jp_props;
             if (el.$el) el = el.$el;
-            const class_list = props.classes.trim().replace(/\s\s+/g, ' ').split(' ');
+            const class_list = props.class_.trim().replace(/\s\s+/g, ' ').split(' ');
 
 
                 let load_list = props.transition.load.trim().replace(/\s\s+/g, ' ').split(' ');

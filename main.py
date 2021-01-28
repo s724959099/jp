@@ -7,7 +7,8 @@ def my_click(self, msg):
 
 def event_demo():
     wp = jp.WebPage()
-    d = jp.Div(text='Not clicked yet', a=wp, classes='w-48 text-xl m-2 p-1 bg-blue-500 text-white')
+    d = jp.Div(text='Not clicked yet', a=wp, class_='w-48 text-xl m-2 p-1 bg-blue-500 text-white')
+    d.add(jp.Div(text='yooo'))
     d.on('click', my_click)
     return wp
 

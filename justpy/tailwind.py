@@ -405,7 +405,7 @@ class Tailwind:
             raise Exception(f'No Tailwind pseudo-class (modifier) named {modifier}')
         if tw_class not in Tailwind.tw_reverse_dict:
             raise Exception(f'No Tailwind class named {tw_class}')
-        class_list = self.classes.split()
+        class_list = self.class_.split()
         if not modifier:
             for i in class_list:
                 if i in Tailwind.tw_dict[Tailwind.tw_reverse_dict[tw_class]]:
@@ -418,8 +418,8 @@ class Tailwind:
                 if i in tw_dict_modified:
                     class_list.remove(i)
             class_list.append(tw_class_modified)
-        self.classes = ' '.join(class_list)
-        return self.classes
+        self.class_ = ' '.join(class_list)
+        return self.class_
 
     def set_classes(self, class_list):
         # Takes a string of tailwind classes and sets them all

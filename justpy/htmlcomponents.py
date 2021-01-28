@@ -333,15 +333,15 @@ class JustpyBaseComponent(Tailwind):
             return False
 
     def has_class(self, class_name):
-        return class_name in self.classes.split()
+        return class_name in self.class_.split()
 
     def remove_class(self, tw_class):
-        class_list = self.classes.split()
+        class_list = self.class_.split()
         try:
             class_list.remove(tw_class)
         except:
             pass
-        self.classes = ' '.join(class_list)
+        self.class_ = ' '.join(class_list)
 
     def hidden(self, flag=True):
         if flag:
@@ -443,7 +443,7 @@ class HTMLBaseComponent(JustpyBaseComponent):
     html_global_attributes = ['accesskey', 'class', 'contenteditable', 'dir', 'draggable', 'dropzone', 'hidden', 'id',
                               'lang', 'spellcheck', 'style', 'tabindex', 'title']
 
-    attribute_list = ['id', 'vue_type', 'show', 'events', 'event_modifiers', 'classes', 'style', 'set_focus',
+    attribute_list = ['id', 'vue_type', 'show', 'events', 'event_modifiers', 'class_', 'style', 'set_focus',
                       'html_tag', 'class_name', 'event_propagation', 'inner_html', 'animation', 'debug', 'transition']
 
     # not_used_global_attributes = ['dropzone', 'translate', 'autocapitalize',
@@ -477,7 +477,7 @@ class HTMLBaseComponent(JustpyBaseComponent):
         self.pages = {}  # Dictionary of pages the component is on. Not managed by framework.
         self.show = True
         self.set_focus = False
-        self.classes = ''
+        self.class_ = ''
         self.slot = None
         self.scoped_slots = {}  # For Quasar and other Vue.js based components
         self.style = ''
@@ -536,8 +536,8 @@ class HTMLBaseComponent(JustpyBaseComponent):
         for attr, value in d['attrs'].items():
             if value:
                 s = f'{s}{attr}="{value}" '
-        if self.classes:
-            s = f'{s}class="{self.classes}"/>{ws}'
+        if self.class_:
+            s = f'{s}class="{self.class_}"/>{ws}'
         else:
             s = f'{s}/>{ws}'
         return s
@@ -679,8 +679,8 @@ class Div(HTMLBaseComponent):
                 s = f'{s}{attr}="{value}" '
         if self.style:
             s = f'{s}style="{self.style}"'
-        if self.classes:
-            s = f'{s}class="{self.classes}">{ws}'
+        if self.class_:
+            s = f'{s}class="{self.class_}">{ws}'
         else:
             s = f'{s}>{ws}'
         if self.inner_html:
@@ -987,7 +987,7 @@ class Icon(Div):
 
     def convert_object_to_dict(self):
         d = super().convert_object_to_dict()
-        d['classes'] = self.classes + ' fa fa-' + self.icon
+        d['class_'] = self.class_ + ' fa fa-' + self.icon
         return d
 
 
@@ -1060,14 +1060,14 @@ class TabGroup(Div):
         self.wrapper_div_classes = self.animation_speed  # Component in this will be centered
 
         if self.previous_value:
-            self.wrapper_div = Div(classes=self.wrapper_div_classes, animation=self.animation_next, temp=True,
+            self.wrapper_div = Div(class_=self.wrapper_div_classes, animation=self.animation_next, temp=True,
                                    style=f'{self.__class__.wrapper_style} z-index: 50;', a=self)
             self.wrapper_div.add(self.tabs[self.value]['tab'])
-            self.wrapper_div = Div(classes=self.wrapper_div_classes, animation=self.animation_prev, temp=True,
+            self.wrapper_div = Div(class_=self.wrapper_div_classes, animation=self.animation_prev, temp=True,
                                    style=f'{self.__class__.wrapper_style} z-index: 0;', a=self)
             self.wrapper_div.add(self.tabs[self.previous_value]['tab'])
         else:
-            self.wrapper_div = Div(classes=self.wrapper_div_classes, temp=True, a=self,
+            self.wrapper_div = Div(class_=self.wrapper_div_classes, temp=True, a=self,
                                    style=self.__class__.wrapper_style)
             self.wrapper_div.add(self.tabs[self.value]['tab'])
 
@@ -1298,7 +1298,7 @@ class Hello(Div):
     def __init__(self, **kwargs):
         self.counter = 1
         super().__init__(**kwargs)
-        self.classes = 'm-1 p-1 text-2xl text-center text-white bg-blue-500 hover:bg-blue-800 cursor-pointer'
+        self.class_ = 'm-1 p-1 text-2xl text-center text-white bg-blue-500 hover:bg-blue-800 cursor-pointer'
         self.text = 'Hello! (click me)'
 
         async def click(self, msg):
@@ -1312,7 +1312,7 @@ class QHello(Hello):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.classes = 'text-h3 text-primary q-ma-md'
+        self.class_ = 'text-h3 text-primary q-ma-md'
 
 
 def component_by_tag(tag, **kwargs):
@@ -1353,15 +1353,15 @@ class AutoTable(Table):
             thead = Thead(a=self)
             tr = Tr(a=thead)
             for item in headers:
-                Th(text=item, classes=self.th_classes, a=tr)
+                Th(text=item, class_=self.th_classes, a=tr)
             tbody = Tbody(a=self)
             for i, row in enumerate(self.values[1:]):
                 if i % 2 == 1:
-                    tr = Tr(classes=self.tr_even_classes, a=tbody)
+                    tr = Tr(class_=self.tr_even_classes, a=tbody)
                 else:
-                    tr = Tr(classes=self.tr_odd_classes, a=tbody)
+                    tr = Tr(class_=self.tr_odd_classes, a=tbody)
                 for item in row:
-                    Td(text=item, classes=self.td_classes, a=tr)
+                    Td(text=item, class_=self.td_classes, a=tr)
 
 
 get_tag = component_by_tag
@@ -1500,8 +1500,8 @@ class BasicHTMLParser(HTMLParser):
                         self.name_dict[attr[1]] = [self.name_dict[attr[1]]]
                     self.name_dict[attr[1]].append(c)
             if attr[0] == 'class':
-                c.classes = attr[1]
-                attr[0] = 'classes'
+                c.class_ = attr[1]
+                attr[0] = 'class_'
             # Handle attributes that are also python reserved words
             if attr[0] in ['in', 'from']:
                 attr[0] = '_' + attr[0]
