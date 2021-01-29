@@ -260,6 +260,8 @@ Vue.component('html_component', {
     if (props.id && props.transition && props.transition.load)
       this.transitionLoadFunction();
 
+    // only out event
+    // 如果是要找on event 在render
     for (let i = 0; i < props.events.length; i++) {
       let split_event = props.events[i].split('__');
       if (split_event[1] === 'out')

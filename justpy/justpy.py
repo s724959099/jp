@@ -141,7 +141,21 @@ class Homepage(HTTPEndpoint):
         assert issubclass(type(func_response_wp), WebPage), 'Function did not return a web page'
         assert len(
             func_response_wp) > 0 or func_response_wp.html, '\u001b[47;1m\033[93mWeb page is empty, add components\033[0m'
-
+        """
+        reload_interval: None or sec reload by ajax
+        body_style: 在#components 之外的body tag style
+        body_classes: 在#components 之外的body tag class
+        css: raw css string in style tag
+        head_html: raw head tag string in head tag
+        body_html: raw body html tag string before div#components
+        display_url: set url in history state
+        title: web site title
+        redirect: redirct url
+        highcharts_theme: use highcarts theme js
+        debug: debug message
+        events: page events
+        favcion: set favicon
+        """
         page_options = {'reload_interval': func_response_wp.reload_interval, 'body_style': func_response_wp.body_style,
                         'body_classes': func_response_wp.body_classes, 'css': func_response_wp.css,
                         'head_html': func_response_wp.head_html, 'body_html': func_response_wp.body_html,
@@ -156,8 +170,17 @@ class Homepage(HTTPEndpoint):
         else:
             page_dict = func_response_wp.build_list()
         template_options['tailwind'] = func_response_wp.tailwind
-        # todo
-        context = {'request': request, 'page_id': func_response_wp.page_id,
+        """
+        template context
+        page_id: 給前後端知道 是哪一個WebPage
+        justpy_dict: wp.build_list 是vue 的data，render 長dom 用 
+            也會轉成child 的html_component.$props.jp_props，在長出更子層
+        use_websockets: 如果不是使用websockets 就是使用ajax
+        page_options:
+        html: 如果html 有，就改使用html tag string
+        """
+        # todo check html or oop tag
+        context = {'page_id': func_response_wp.page_id,
                    'justpy_dict': json.dumps(page_dict, default=str),
                    'use_websockets': json.dumps(WebPage.use_websockets), 'options': template_options,
                    'page_options': page_options,
