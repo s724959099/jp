@@ -266,6 +266,7 @@ class HTMLBaseComponent(Tailwind):
     html_global_attributes = ['accesskey', 'class', 'contenteditable', 'dir', 'draggable', 'dropzone', 'hidden', 'id',
                               'lang', 'spellcheck', 'style', 'tabindex', 'title']
 
+    # 客製化的 attr，給js & python ex: vue_type, html_tag
     attribute_list = ['id', 'vue_type', 'show', 'events', 'event_modifiers', 'class_', 'style', 'set_focus',
                       'html_tag', 'class_name', 'event_propagation', 'inner_html', 'animation', 'debug', 'transition']
 
@@ -382,21 +383,32 @@ class HTMLBaseComponent(Tailwind):
         return
 
     def convert_object_to_dict(self) -> dict:
-        d = {}
+        d = {
+            'attrs': {},
+            'scoped_slots': {},
+            'directives': {},
+            'additional_properties': self.additional_properties,
+            'drag_options': self.drag_options
+
+        }
+        # Name is a special case. Allow it to be defined for all
+        with try_save():
+            d['attrs']['name'] = self.name
         # Add id if CSS transition is defined
         if self.transition:
             self.check_transition()
         if self.id:
             d['attrs'] = {'id': str(self.id)}
-        else:
-            d['attrs'] = {}
+
         for attr in HTMLBaseComponent.attribute_list:
             d[attr] = getattr(self, attr)
-        d['directives'] = {}
+
+        # set directives
         for i in self.directives:
             if i[0:2] == 'v-':  # It is a directive
                 with try_save():
                     d['directives'][i[2:]] = getattr(self, i.replace('-', '_'))
+        # attrs
         for i in self.prop_list + self.attributes + HTMLBaseComponent.used_global_attributes:
             with try_save():
                 d['attrs'][i] = getattr(self, i)
@@ -405,16 +417,10 @@ class HTMLBaseComponent(Tailwind):
                 if '-' in i:
                     s = i.replace('-', '_')  # kebab case to snake case
                     d['attrs'][i] = getattr(self, s)
-        # Name is a special case. Allow it to be defined for all
-        with try_save():
-            d['attrs']['name'] = self.name
-        d['scoped_slots'] = {}
+
+        # scoped_slots
         for s in self.scoped_slots:
             d['scoped_slots'][s] = self.scoped_slots[s].convert_object_to_dict()
-        if self.additional_properties:
-            d['additional_properties'] = self.additional_properties
-        if self.drag_options:
-            d['drag_options'] = self.drag_options
         return d
 
     async def update(self, socket=None):
@@ -687,7 +693,7 @@ class Div(HTMLBaseComponent):
             object_list.append(d)
         return object_list
 
-    def convert_object_to_dict(self):
+    def convert_object_to_dict(self) -> dict:
         d = super().convert_object_to_dict()
         if hasattr(self, 'model'):
             self.model_update()
@@ -800,7 +806,7 @@ class Input(Div):
         else:
             self.value = update_value
 
-    def convert_object_to_dict(self):
+    def convert_object_to_dict(self) -> dict:
         d = super().convert_object_to_dict()
         d['debounce'] = self.debounce
         d['input_type'] = self.type  # Needed for vue component updated life hook and event handler
@@ -840,7 +846,7 @@ class InputChangeOnly(Input):
     of <textarea> or <input type="text">) or when Enter is pressed.
     """
 
-    def convert_object_to_dict(self):
+    def convert_object_to_dict(self) -> dict:
         d = super().convert_object_to_dict()
         d['events'].remove('input')
         if 'change' not in d['events']:
@@ -872,7 +878,7 @@ class Label(Div):
         self.for_component = None
         super().__init__(**kwargs)
 
-    def convert_object_to_dict(self):
+    def convert_object_to_dict(self) -> dict:
         d = super().convert_object_to_dict()
         try:
             d['attrs']['for'] = self.for_component.id
@@ -934,7 +940,7 @@ class A(Div):
 
             self.on('click', default_click)
 
-    def convert_object_to_dict(self):
+    def convert_object_to_dict(self) -> dict:
         d = super().convert_object_to_dict()
         d['scroll'] = self.scroll
         d['scroll_option'] = self.scroll_option
@@ -961,7 +967,7 @@ class Icon(Div):
         self.icon = 'dog'  # Default icon
         super().__init__(**kwargs)
 
-    def convert_object_to_dict(self):
+    def convert_object_to_dict(self) -> dict:
         d = super().convert_object_to_dict()
         d['class_'] = self.class_ + ' fa fa-' + self.icon
         return d
@@ -1034,7 +1040,7 @@ class TabGroup(Div):
     def model_update(self):
         self.value = self.model[0].data[self.model[1]]
 
-    def convert_object_to_dict(self):
+    def convert_object_to_dict(self) -> dict:
         self.components = []
         self.wrapper_div_classes = self.animation_speed  # Component in this will be centered
 
@@ -1359,7 +1365,7 @@ class HTMLEntity(Span):
         self.entity = ''
         super().__init__(**kwargs)
 
-    def convert_object_to_dict(self):
+    def convert_object_to_dict(self) -> dict:
         d = super().convert_object_to_dict()
         d['inner_html'] = self.entity
         return d

@@ -144,7 +144,7 @@ class HighCharts(HTMLBaseComponent):
             self.options = Dict(demjson.decode(f.read().encode("ascii", "ignore")))
         return self.options
 
-    def convert_object_to_dict(self):
+    def convert_object_to_dict(self) -> dict:
 
         d = {}
         d['vue_type'] = self.vue_type

@@ -117,24 +117,6 @@ async def justpy_startup():
 class Homepage(HTTPEndpoint):
 
     async def get(self, request):
-        # Handle web requests
-        # todo useless
-        # session_cookie = request.cookies.get(SESSION_COOKIE_NAME)
-        # if SESSIONS:
-        #     new_cookie = False
-        #     if session_cookie:
-        #         try:
-        #             session_id = cookie_signer.unsign(session_cookie).decode("utf-8")
-        #         except:
-        #             return PlainTextResponse('Bad Session')
-        #         request.state.session_id = session_id
-        #         request.session_id = session_id
-        #     else:
-        #         # Create new session_id
-        #         request.state.session_id = str(uuid.uuid4().hex)
-        #         request.session_id = request.state.session_id
-        #         new_cookie = True
-        #         logger.debug(f'New session_id created: {request.session_id}')
         # 取得 route & function
         func_to_run = None
         for route in Route.instances:
@@ -182,13 +164,6 @@ class Homepage(HTTPEndpoint):
                    'html': func_response_wp.html}
         # 轉成template resposne
         response = templates.TemplateResponse(func_response_wp.template_file, context)
-        # todo useless
-        # if SESSIONS and new_cookie:
-        #     cookie_value = cookie_signer.sign(request.state.session_id)
-        #     cookie_value = cookie_value.decode("utf-8")
-        #     response.set_cookie(SESSION_COOKIE_NAME, cookie_value, max_age=COOKIE_MAX_AGE, httponly=True)
-        #     for k, v in load_page.cookies.items():
-        #         response.set_cookie(k, v, max_age=COOKIE_MAX_AGE, httponly=True)
 
         # 延遲
         if LATENCY:

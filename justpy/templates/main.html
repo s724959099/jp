@@ -263,23 +263,6 @@
     }
   }
 
-  {% if page_options.reload_interval %}
-    setInterval(function () {
-      $.ajax({
-        type: "POST",
-        url: "/zzz_justpy_ajax",
-        data: JSON.stringify({
-          'type': 'event',
-          'event_data': {'event_type': 'page_update', 'page_id': {{ page_id | safe }}}
-        }),
-        success: function (msg) {
-          if (msg) app1.justpyComponents = msg.data;
-        },
-        dataType: 'json'
-      });
-    }, 1000 * {{ page_options.reload_interval }});
-  {% endif %}
-
   let app1 = new Vue({
     el: '#components',
     data: {
@@ -299,5 +282,23 @@
       return h('div', {}, comps);
     }
   });
+
+
+  {% if page_options.reload_interval %}
+    setInterval(function () {
+      $.ajax({
+        type: "POST",
+        url: "/zzz_justpy_ajax",
+        data: JSON.stringify({
+          'type': 'event',
+          'event_data': {'event_type': 'page_update', 'page_id': {{ page_id | safe }}}
+        }),
+        success: function (msg) {
+          if (msg) app1.justpyComponents = msg.data;
+        },
+        dataType: 'json'
+      });
+    }, 1000 * {{ page_options.reload_interval }});
+  {% endif %}
 
 </script>
