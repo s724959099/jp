@@ -145,7 +145,6 @@ function send_to_server(e, event_type, debug_flag) {
         }
     } else {
 
-        d = JSON.stringify({'type': 'event', 'event_data': e});
         $.ajax({
             type: "POST",
             url: "/zzz_justpy_ajax",

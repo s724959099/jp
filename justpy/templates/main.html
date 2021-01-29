@@ -34,6 +34,10 @@
   let crosshairs = [];
   let comp_dict = {};  // Hold components for running methods
 
+  // for other variables
+  let web_socket_closed = false;
+  let socket;
+
   {% for event in page_options.events %}
     document.addEventListener('{{ event }}', function (evt) {
       const e = {
@@ -54,7 +58,6 @@
     } else {
       protocol_string = 'ws://'
     }
-    let socket;
     if (location.port) {
       socket = new WebSocket(protocol_string + document.domain + ':' + location.port);
     } else {
@@ -72,7 +75,6 @@
       if (ok_to_reload) window.location.reload()
     });
 
-    let web_socket_closed = false;
     socket.addEventListener('close', function (event) {
       console.log('Websocket closed');
       web_socket_closed = true;
