@@ -264,8 +264,10 @@ Vue.component('html_component', {
       let split_event = props.events[i].split('__');
       if (split_event[1] === 'out')
         document.addEventListener(split_event[0], function (event) {
+          // 不是target
           if (el.contains(event.target))
             return;
+          // 該el 具有實體大小
           if (el.offsetWidth < 1 && el.offsetHeight < 1)
             return;
           let e = {
