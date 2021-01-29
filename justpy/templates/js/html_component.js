@@ -296,7 +296,8 @@ Vue.component('html_component', {
   beforeUpdate() {
     if (this.$props.jp_props.id && this.$props.jp_props.transition) {
       let el = this.$refs['r' + this.$props.jp_props.id];
-      if (el.$el) el = el.$el;
+      if (el.$el)
+        el = el.$el;
       this.previous_display = getComputedStyle(el, null).display;
     }
   },
@@ -304,8 +305,10 @@ Vue.component('html_component', {
     const el = this.$refs['r' + this.$props.jp_props.id];
     const props = this.$props.jp_props;
 
-    if (props.animation) this.animateFunction();
-    if (this.$props.jp_props.id && props.transition) this.transitionFunction();
+    if (props.animation)
+      this.animateFunction();
+    if (this.$props.jp_props.id && props.transition)
+      this.transitionFunction();
 
     if (props.input_type && (props.input_type !== 'file')) {
 

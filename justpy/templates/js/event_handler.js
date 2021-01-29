@@ -150,15 +150,20 @@ function send_to_server(e, event_type, debug_flag) {
             url: "/zzz_justpy_ajax",
             data: JSON.stringify({'type': event_type, 'event_data': e}),
             success: function (msg) {
+                // redirect
                 if (msg.page_options.redirect) {
                     location.href = msg.page_options.redirect;
                 }
+                // open new browser
                 if (msg.page_options.open) {
                     window.open(msg.page_options.open, '_blank');
                 }
+                // update url
                 if (msg.page_options.display_url !== null)
                     window.history.pushState("", "", msg.page_options.display_url);
+                // update title
                 document.title = msg.page_options.title;
+                // update favicon
                 if (msg.page_options.favicon) {
                     var link = document.querySelector("link[rel*='icon']") || document.createElement('link');
                     link.type = 'image/x-icon';
@@ -166,7 +171,9 @@ function send_to_server(e, event_type, debug_flag) {
                     link.href = '{{ url_for(options.static_name, path=' / ') }}' + msg.page_options.favicon;
                     document.getElementsByTagName('head')[0].appendChild(link);
                 }
-                if (msg) app1.justpyComponents = msg.data;
+                // 實際更新dom 是根據這邊的data
+                if (msg)
+                    app1.justpyComponents = msg.data;
             },
             dataType: 'json'
         });

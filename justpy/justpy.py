@@ -19,6 +19,7 @@ from .routing import Route, SetRoute
 from .utilities import run_task, create_delayed_task
 import uvicorn, sys, os, traceback, fnmatch
 from loguru import logger
+import logging
 from ssl import PROTOCOL_SSLv23
 from contextlib import asynccontextmanager
 
@@ -39,10 +40,9 @@ if LATENCY:
 SESSIONS = config('SESSIONS', cast=bool, default=True)
 SESSION_COOKIE_NAME = config('SESSION_COOKIE_NAME', cast=str, default='jp_token')
 SECRET_KEY = config('SECRET_KEY', default='$$$my_secret_string$$$')  # Make sure to change when deployed
-# todo
-# LOGGING_LEVEL = config('LOGGING_LEVEL', default=logger.WARNING)
-# JustPy.LOGGING_LEVEL = LOGGING_LEVEL
-# UVICORN_LOGGING_LEVEL = config('UVICORN_LOGGING_LEVEL', default='WARNING').lower()
+LOGGING_LEVEL = config('LOGGING_LEVEL', default=logging.WARNING)
+JustPy.LOGGING_LEVEL = LOGGING_LEVEL
+UVICORN_LOGGING_LEVEL = config('UVICORN_LOGGING_LEVEL', default='WARNING').lower()
 COOKIE_MAX_AGE = config('COOKIE_MAX_AGE', cast=int, default=60 * 60 * 24 * 7)  # One week in seconds
 HOST = config('HOST', cast=str, default='127.0.0.1')
 PORT = config('PORT', cast=int, default=8000)
@@ -377,12 +377,12 @@ async def handle_event(data_dict, com_type=0, page_event=False):
             build_list = p.build_list()
 
     if com_type == 1 and event_result is None:
-        dict_to_send = {'type': 'page_update', 'data': build_list,
-                        'page_options': {'display_url': p.display_url,
-                                         'title': p.title,
-                                         'redirect': p.redirect, 'open': p.open,
-                                         'favicon': p.favicon}}
-        return dict_to_send
+        ajax_response = {'type': 'page_update', 'data': build_list,
+                         'page_options': {'display_url': p.display_url,
+                                          'title': p.title,
+                                          'redirect': p.redirect, 'open': p.open,
+                                          'favicon': p.favicon}}
+        return ajax_response
 
 
 def justpy(func=None, *, start_server=True, websockets=True, host=HOST, port=PORT, startup=None, **kwargs):
