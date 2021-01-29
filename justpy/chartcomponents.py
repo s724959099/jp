@@ -3,9 +3,10 @@ import demjson
 from addict import Dict
 import itertools
 
-#TODO: May need to call chart.reflow() on resize
-#TODO: Handle formatter functions, for example in dataLabels and others.
-#TODO: Add support for more events like drilldown
+
+# TODO: May need to call chart.reflow() on resize
+# TODO: Handle formatter functions, for example in dataLabels and others.
+# TODO: Add support for more events like drilldown
 
 # If width of chart not specified it defaults to 600px
 # A JavaScript date is fundamentally specified as the number of milliseconds that have elapsed since midnight on January 1, 1970, UTC
@@ -14,10 +15,11 @@ import itertools
 def make_pairs_list(x_data, y_data):
     return list(map(list, itertools.zip_longest(x_data, y_data)))
 
-class HighCharts(JustpyBaseComponent):
 
+class HighCharts(HTMLBaseComponent):
     # Highcharts.getOptions().colors
-    highcharts_colors = ["#7cb5ec", "#434348", "#90ed7d", "#f7a35c", "#8085e9", "#f15c80", "#e4d354", "#2b908f", "#f45b5b", "#91e8e1"]
+    highcharts_colors = ["#7cb5ec", "#434348", "#90ed7d", "#f7a35c", "#8085e9", "#f15c80", "#e4d354", "#2b908f",
+                         "#f45b5b", "#91e8e1"]
 
     # Theme is One of ['avocado', 'dark-blue', 'dark-green', 'dark-unica', 'gray',
     # 'grid-light', 'grid', 'high-contrast-dark', 'high-contrast-light', 'sand-signika', 'skies', 'sunset']
@@ -46,11 +48,11 @@ class HighCharts(JustpyBaseComponent):
         self.tooltip_y = 40
         self.tooltip_debounce = 100  # Default is 100 ms
         self.update_animation = True  # Whether to animate changes when chart is updated
-        self.update_create = False    # Whether to create new chart on update, if false current chart is updated
+        self.update_create = False  # Whether to create new chart on update, if false current chart is updated
         kwargs['temp'] = False  # Force an id to be assigned to chart
         super().__init__(**kwargs)
         for k, v in kwargs.items():
-            self.__setattr__(k,v)
+            self.__setattr__(k, v)
         self.allowed_events = ['tooltip', 'point_click', 'point_select', 'point_unselect', 'series_hide',
                                'series_show', 'series_click']
         for e in self.allowed_events:
@@ -83,7 +85,6 @@ class HighCharts(JustpyBaseComponent):
                 self.__dict__[key] = value
         else:
             self.__dict__[key] = value
-
 
     async def chart_update(self, update_dict, websocket):
         # https://api.highcharts.com/class-reference/Highcharts.Chart#update
@@ -139,7 +140,7 @@ class HighCharts(JustpyBaseComponent):
         return self.options
 
     def load_json_from_file(self, file_name):
-        with open(file_name,'r') as f:
+        with open(file_name, 'r') as f:
             self.options = Dict(demjson.decode(f.read().encode("ascii", "ignore")))
         return self.options
 
@@ -168,13 +169,11 @@ class HighCharts(JustpyBaseComponent):
 class HighStock(HighCharts):
 
     def __init__(self, **kwargs):
-
         super().__init__(**kwargs)
         self.stock = True
 
 
 class Histogram(HighCharts):
-
     _options = """
 {
     title: {
@@ -223,7 +222,6 @@ class Histogram(HighCharts):
 
 
 class Pie(HighCharts):
-
     _options = """
             {
                 chart: {
@@ -268,7 +266,6 @@ class Pie(HighCharts):
 
 
 class PieSemiCircle(HighCharts):
-
     _options = """
             {
                 chart: {
@@ -326,7 +323,6 @@ class PieSemiCircle(HighCharts):
 
 
 class Scatter(HighCharts):
-
     _options = """
     {
     chart: {
@@ -358,7 +354,7 @@ class Scatter(HighCharts):
         super().__init__(**kwargs)
         self.load_json(self._options)
         s = Dict()
-        s.data = list(zip(x,y))
+        s.data = list(zip(x, y))
         self.options.series.append(s)
 
 
@@ -367,6 +363,7 @@ class Scatter(HighCharts):
 
 try:
     import matplotlib.pyplot as plt
+
     _has_matplotlib = True
     import io
 except:

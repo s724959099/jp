@@ -20,15 +20,6 @@ attrfind_tolerant = re.compile(
 _tag_class_dict = {}
 
 
-def parse_dict(cls):
-    """
-    Decorator for component class definitions that updates _tag_class_dict so that the parser can recognize new components
-    Required only for components not defined in this module
-    """
-    _tag_class_dict[cls.html_tag] = cls
-    return cls
-
-
 class JustPy:
     loop = None
     LOGGING_LEVEL = logging.DEBUG
@@ -256,185 +247,16 @@ class TailwindUIPage(WebPage):
         self.template_file = 'tailwindui.html'
 
 
-class JustpyBaseComponent(Tailwind):
+class HTMLBaseComponent(Tailwind):
+    """
+    Base Component for all HTML components
+    """
     next_id = 1
     # for singletone id: instance
     instances = {}
     temp_flag = True
     delete_flag = True
     needs_deletion = False
-
-    def __init__(self, **kwargs):
-        super().__init__()
-        # 每new 一個 self.id 就會增加一個 用在on evnet 等等功能上
-        cls = JustpyBaseComponent
-        temp = kwargs.get('temp', cls.temp_flag)
-        delete_flag = kwargs.get('delete_flag', cls.delete_flag)
-        if temp and delete_flag:
-            self.id = None
-        else:
-            self.id = cls.next_id
-            cls.next_id += 1
-
-        self.events = []
-        self.event_modifiers = Dict()
-        self.transition = None
-        self.allowed_events = []
-        self.pages = {}  # Dictionary of pages the component is on. Not managed by framework.
-        # self.model = []
-
-    def initialize(self, **kwargs):
-        # for subclass __init__
-        # todo
-        for k, v in kwargs.items():
-            self.__setattr__(k, v)
-        self.set_keyword_events(**kwargs)
-        for com in ['a', 'add_to']:
-            if com in kwargs.keys():
-                kwargs[com].add_component(self)
-
-    def set_keyword_events(self, **kwargs):
-        # for subclass __init__
-        # todo
-        for e in self.allowed_events:
-            for prefix in ['', 'on', 'on_']:
-                if prefix + e in kwargs.keys():
-                    cls = JustpyBaseComponent
-                    if not self.id:
-                        self.id = cls.next_id
-                        cls.next_id += 1
-                    fn = kwargs[prefix + e]
-                    if isinstance(fn, str):
-                        fn_string = f'def oneliner{self.id}(self, msg):\n {fn}'
-                        exec(fn_string)
-                        self.on(e, locals()[f'oneliner{self.id}'])
-                    else:
-                        self.on(e, fn)
-                    break
-
-    def delete(self):
-        if self.needs_deletion:
-            if self.delete_flag:
-                JustpyBaseComponent.instances.pop(self.id)
-                self.needs_deletion = False
-
-    def on(self, event_type, func, debounce=None, throttle=None, immediate=False):
-        # todo
-        if event_type in self.allowed_events:
-            cls = JustpyBaseComponent
-            if not self.id:
-                self.id = cls.next_id
-                cls.next_id += 1
-            cls.instances[self.id] = self
-            self.needs_deletion = True
-            if inspect.ismethod(func):
-                setattr(self, 'on_' + event_type, func)
-            else:
-                setattr(self, 'on_' + event_type, MethodType(func, self))
-            if event_type not in self.events:
-                self.events.append(event_type)
-            if debounce:
-                self.event_modifiers[event_type].debounce = {'value': debounce, 'timeout': None, 'immediate': immediate}
-            elif throttle:
-                self.event_modifiers[event_type].throttle = {'value': throttle, 'timeout': None}
-        else:
-            raise Exception(f'No event of type {event_type} supported')
-
-    def remove_event(self, event_type):
-        if event_type in self.events:
-            self.events.remove(event_type)
-
-    def has_event_function(self, event_type):
-        if getattr(self, 'on_' + event_type, None):
-            return True
-        else:
-            return False
-
-    def has_class(self, class_name):
-        return class_name in self.class_.split()
-
-    def remove_class(self, tw_class):
-        class_list = self.class_.split()
-        try:
-            class_list.remove(tw_class)
-        except Exception:
-            pass
-        self.class_ = ' '.join(class_list)
-
-    def hidden(self, flag=True):
-        if flag:
-            self.set_class('hidden')
-        else:
-            self.remove_class('hidden')
-
-    def hidden_toggle(self):
-        if self.has_class('hidden'):
-            self.remove_class('hidden')
-        else:
-            self.set_class('hidden')
-
-    def check_transition(self):
-        if self.transition and (not self.id):
-            cls = JustpyBaseComponent
-            self.id = cls.next_id
-            cls.next_id += 1
-
-    async def run_method(self, command, websocket):
-        await websocket.send_json({'type': 'run_method', 'data': command, 'id': self.id})
-        # So the page itself does not update, return True not None
-        return True
-
-    def remove_page_from_pages(self, wp: WebPage):
-        self.pages.pop(wp.page_id)
-
-    def add_page(self, wp: WebPage):
-        self.pages[wp.page_id] = wp
-
-    def add_page_to_pages(self, wp: WebPage):
-        self.pages[wp.page_id] = wp
-
-    def set_model(self, value):
-        if hasattr(self, 'model') and len(self.model):
-            if len(self.model) == 2:
-                self.model[0].data[self.model[1]] = value
-            else:
-                self.model[0][self.model[1]] = value
-
-    def get_model(self):
-        if len(self.model) == 2:
-            model_value = self.model[0].data[self.model[1]]
-        else:
-            model_value = self.model[0][self.model[1]]
-        return model_value
-
-    async def run_event_function(self, event_type, event_data, create_namespace_flag=True):
-        event_function = getattr(self, 'on_' + event_type)
-        if create_namespace_flag:
-            function_data = Dict(event_data)
-        else:
-            function_data = event_data
-        if inspect.iscoroutinefunction(event_function):
-            event_result = await event_function(function_data)
-        else:
-            event_result = event_function(function_data)
-        return event_result
-
-    @staticmethod
-    def convert_dict_to_object(d):
-        obj = globals()[d['class_name']]()
-        for obj_prop in d['object_props']:
-            obj.add(JustpyBaseComponent.convert_dict_to_object(obj_prop))
-        for k, v in d.items():
-            obj.__dict__[k] = v
-        for k, v in d['attrs'].items():
-            obj.__dict__[k] = v
-        return obj
-
-
-class HTMLBaseComponent(JustpyBaseComponent):
-    """
-    Base Component for all HTML components
-    """
 
     attributes = []
     html_tag = 'div'
@@ -470,7 +292,24 @@ class HTMLBaseComponent(JustpyBaseComponent):
     #                   'dragstart', 'dragover', 'drop']
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__()
+        # 每new 一個 self.id 就會增加一個 用在on evnet 等等功能上
+        cls = HTMLBaseComponent
+        temp = kwargs.get('temp', cls.temp_flag)
+        delete_flag = kwargs.get('delete_flag', cls.delete_flag)
+        if temp and delete_flag:
+            self.id = None
+        else:
+            self.id = cls.next_id
+            cls.next_id += 1
+
+        self.events = []
+        self.event_modifiers = Dict()
+        self.transition = None
+        self.allowed_events = []
+        self.pages = {}  # Dictionary of pages the component is on. Not managed by framework.
+        # self.model = []
+
         self.class_name = type(self).__name__
         self.debug = False
         self.inner_html = ''
@@ -506,6 +345,17 @@ class HTMLBaseComponent(JustpyBaseComponent):
     def __repr__(self):
         name = self.name if hasattr(self, 'name') else 'No name'
         return f'{self.__class__.__name__}(id: {self.id}, html_tag: {self.html_tag}, vue_type: {self.vue_type}, name: {name}, number of components: {len(self)})'
+
+    @staticmethod
+    def convert_dict_to_object(d):
+        obj = globals()[d['class_name']]()
+        for obj_prop in d['object_props']:
+            obj.add(HTMLBaseComponent.convert_dict_to_object(obj_prop))
+        for k, v in d.items():
+            obj.__dict__[k] = v
+        for k, v in d['attrs'].items():
+            obj.__dict__[k] = v
+        return obj
 
     def add_to_page(self, wp: WebPage):
         wp.add_component(self)
@@ -547,7 +397,7 @@ class HTMLBaseComponent(JustpyBaseComponent):
     def react(self, data):
         return
 
-    def convert_object_to_dict(self):
+    def convert_object_to_dict(self) -> dict:
         d = {}
         # Add id if CSS transition is defined
         if self.transition:
@@ -614,6 +464,142 @@ class HTMLBaseComponent(JustpyBaseComponent):
                         print('Problem with websocket in component update, ignoring')
         return self
 
+    def initialize(self, **kwargs):
+        # for subclass __init__
+        # todo
+        for k, v in kwargs.items():
+            self.__setattr__(k, v)
+        self.set_keyword_events(**kwargs)
+        for com in ['a', 'add_to']:
+            if com in kwargs.keys():
+                kwargs[com].add_component(self)
+
+    def set_keyword_events(self, **kwargs):
+        # for subclass __init__
+        # todo
+        for e in self.allowed_events:
+            for prefix in ['', 'on', 'on_']:
+                if prefix + e in kwargs.keys():
+                    cls = HTMLBaseComponent
+                    if not self.id:
+                        self.id = cls.next_id
+                        cls.next_id += 1
+                    fn = kwargs[prefix + e]
+                    if isinstance(fn, str):
+                        fn_string = f'def oneliner{self.id}(self, msg):\n {fn}'
+                        exec(fn_string)
+                        self.on(e, locals()[f'oneliner{self.id}'])
+                    else:
+                        self.on(e, fn)
+                    break
+
+    def delete(self):
+        if self.needs_deletion:
+            if self.delete_flag:
+                HTMLBaseComponent.instances.pop(self.id)
+                self.needs_deletion = False
+
+    def on(self, event_type, func, debounce=None, throttle=None, immediate=False):
+        # todo
+        if event_type in self.allowed_events:
+            cls = HTMLBaseComponent
+            if not self.id:
+                self.id = cls.next_id
+                cls.next_id += 1
+            cls.instances[self.id] = self
+            self.needs_deletion = True
+            if inspect.ismethod(func):
+                setattr(self, 'on_' + event_type, func)
+            else:
+                setattr(self, 'on_' + event_type, MethodType(func, self))
+            if event_type not in self.events:
+                self.events.append(event_type)
+            if debounce:
+                self.event_modifiers[event_type].debounce = {'value': debounce, 'timeout': None, 'immediate': immediate}
+            elif throttle:
+                self.event_modifiers[event_type].throttle = {'value': throttle, 'timeout': None}
+        else:
+            raise Exception(f'No event of type {event_type} supported')
+
+    def remove_event(self, event_type):
+        if event_type in self.events:
+            self.events.remove(event_type)
+
+    def has_event_function(self, event_type):
+        if getattr(self, 'on_' + event_type, None):
+            return True
+        else:
+            return False
+
+    def has_class(self, class_name):
+        return class_name in self.class_.split()
+
+    def remove_class(self, tw_class):
+        class_list = self.class_.split()
+        try:
+            class_list.remove(tw_class)
+        except Exception:
+            pass
+        self.class_ = ' '.join(class_list)
+
+    def hidden(self, flag=True):
+        if flag:
+            self.set_class('hidden')
+        else:
+            self.remove_class('hidden')
+
+    def hidden_toggle(self):
+        if self.has_class('hidden'):
+            self.remove_class('hidden')
+        else:
+            self.set_class('hidden')
+
+    def check_transition(self):
+        if self.transition and (not self.id):
+            cls = HTMLBaseComponent
+            self.id = cls.next_id
+            cls.next_id += 1
+
+    async def run_method(self, command, websocket):
+        await websocket.send_json({'type': 'run_method', 'data': command, 'id': self.id})
+        # So the page itself does not update, return True not None
+        return True
+
+    def remove_page_from_pages(self, wp: WebPage):
+        self.pages.pop(wp.page_id)
+
+    def add_page(self, wp: WebPage):
+        self.pages[wp.page_id] = wp
+
+    def add_page_to_pages(self, wp: WebPage):
+        self.pages[wp.page_id] = wp
+
+    def set_model(self, value):
+        if hasattr(self, 'model') and len(self.model):
+            if len(self.model) == 2:
+                self.model[0].data[self.model[1]] = value
+            else:
+                self.model[0][self.model[1]] = value
+
+    def get_model(self):
+        if len(self.model) == 2:
+            model_value = self.model[0].data[self.model[1]]
+        else:
+            model_value = self.model[0][self.model[1]]
+        return model_value
+
+    async def run_event_function(self, event_type, event_data, create_namespace_flag=True):
+        event_function = getattr(self, 'on_' + event_type)
+        if create_namespace_flag:
+            function_data = Dict(event_data)
+        else:
+            function_data = event_data
+        if inspect.iscoroutinefunction(event_function):
+            event_result = await event_function(function_data)
+        else:
+            event_result = event_function(function_data)
+        return event_result
+
 
 class Div(HTMLBaseComponent):
     # A general purpose container
@@ -632,7 +618,7 @@ class Div(HTMLBaseComponent):
             for c in self.components:
                 c.delete()
             if self.needs_deletion:
-                JustpyBaseComponent.instances.pop(self.id)
+                HTMLBaseComponent.instances.pop(self.id)
             self.components = []
 
     def __getitem__(self, index):

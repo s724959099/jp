@@ -288,7 +288,7 @@ class JustpyEvents(WebSocketEndpoint):
         # WebPage.loop.create_task(WebPage.instances[pid].on_disconnect(websocket))
         if MEMORY_DEBUG:
             print('************************')
-            print('Elements: ', len(JustpyBaseComponent.instances), JustpyBaseComponent.instances)
+            print('Elements: ', len(HTMLBaseComponent.instances), HTMLBaseComponent.instances)
             print('WebPages: ', len(WebPage.instances), WebPage.instances)
             print('Sockets: ', len(WebPage.sockets), WebPage.sockets)
             process = psutil.Process(os.getpid())
@@ -336,7 +336,7 @@ async def handle_event(data_dict, com_type=0, page_event=False):
     if page_event:
         c = p
     else:
-        c = JustpyBaseComponent.instances[event_data['id']]
+        c = HTMLBaseComponent.instances[event_data['id']]
         event_data['target'] = c
 
     async with handle_evnet_beofore_and_after(c, event_data):
