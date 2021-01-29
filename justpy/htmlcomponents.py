@@ -1,14 +1,20 @@
 from types import MethodType
 from addict import Dict
-import json, copy, inspect, sys, re
-from html.parser import HTMLParser, tagfind_tolerant, attrfind_tolerant
+from html.parser import HTMLParser
 from html.entities import name2codepoint
 from html import unescape
-from jinja2 import Template
 import asyncio
 from .tailwind import Tailwind
 import logging
 import httpx
+import inspect
+import re
+
+# todo
+tagfind_tolerant = re.compile(r'([a-zA-Z][^\t\n\r\f />\x00]*)(?:\s|/(?!>))*')
+attrfind_tolerant = re.compile(
+    r'((?<=[\'"\s/])[^\s/>][^\s/=>]*)(\s*=+\s*'
+    r'(\'[^\']*\'|"[^"]*"|(?![\'"])[^>\s]*))?(?:\s|/(?!>))*')
 
 # Dictionary for translating from tag to class
 _tag_class_dict = {}
@@ -30,6 +36,7 @@ class JustPy:
 
 class WebPage:
     # TODO: Add page events such as online, beforeunload, resize, visibilitychange
+    loop = None
     instances = {}
     sockets = {}
     next_page_id = 0
@@ -240,6 +247,7 @@ class WebPage:
         return event_result
 
 
+# todo
 class TailwindUIPage(WebPage):
     # https://tailwindui.com/components
 
@@ -272,6 +280,8 @@ class JustpyBaseComponent(Tailwind):
         self.event_modifiers = Dict()
         self.transition = None
         self.allowed_events = []
+        self.pages = {}  # Dictionary of pages the component is on. Not managed by framework.
+        self.model = []
 
     def initialize(self, **kwargs):
         # for subclass __init__
@@ -465,7 +475,6 @@ class HTMLBaseComponent(JustpyBaseComponent):
         self.debug = False
         self.inner_html = ''
         self.animation = False
-        self.pages = {}  # Dictionary of pages the component is on. Not managed by framework.
         self.show = True
         self.set_focus = False
         self.class_ = ''
