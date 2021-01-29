@@ -1,5 +1,12 @@
 # https://tailwindcss.com
 
+def _create_reverse_dict(tw):
+    d = {}
+    for k, v in tw.items():
+        for j in v:
+            d[j] = k
+    return d
+
 
 class Tailwind:
     # TODO: Customization - https://tailwindcss.com/docs/configuration
@@ -105,10 +112,14 @@ class Tailwind:
                                        'bg-right-bottom', 'bg-right-top', 'bg-top'],
                'background_repeat': ['bg-repeat', 'bg-no-repeat', 'bg-repeat-x', 'bg-repeat-y', 'bg-repeat-round',
                                      'bg-repeat-space'], 'background_size': ['bg-auto', 'bg-cover', 'bg-contain'],
-               'background_opacity': ['bg-opacity-0', 'bg-opacity-25', 'bg-opacity-50', 'bg-opacity-75', 'bg-opacity-100'],
-               'text_opacity': ['text-opacity-0', 'text-opacity-25', 'text-opacity-50', 'text-opacity-75', 'text-opacity-100'],
-               'placeholder_opacity': ['placeholder-opacity-0', 'placeholder-opacity-25', 'placeholder-opacity-50', 'placeholder-opacity-75', 'placeholder-opacity-100'],
-               'border_opacity': ['border-opacity-0', 'border-opacity-25', 'border-opacity-50', 'border-opacity-75', 'border-opacity-100'],
+               'background_opacity': ['bg-opacity-0', 'bg-opacity-25', 'bg-opacity-50', 'bg-opacity-75',
+                                      'bg-opacity-100'],
+               'text_opacity': ['text-opacity-0', 'text-opacity-25', 'text-opacity-50', 'text-opacity-75',
+                                'text-opacity-100'],
+               'placeholder_opacity': ['placeholder-opacity-0', 'placeholder-opacity-25', 'placeholder-opacity-50',
+                                       'placeholder-opacity-75', 'placeholder-opacity-100'],
+               'border_opacity': ['border-opacity-0', 'border-opacity-25', 'border-opacity-50', 'border-opacity-75',
+                                  'border-opacity-100'],
                'border_color': ['border-transparent', 'border-current', 'border-black', 'border-white',
                                 'border-gray-100',
                                 'border-gray-200',
@@ -389,22 +400,23 @@ class Tailwind:
                                  'space-y-reverse'],
                'animation': ['animate-none', 'animate-spin', 'animate-ping', 'animate-pulse', 'animate-bounce']
                }
+    tw_reverse_dict = _create_reverse_dict(tw_dict)
 
-    @staticmethod
-    def create_reverse_dict(tw):
-        d = {}
-        for k, v in tw.items():
-            for j in v:
-                d[j] = k
-        return d
-
-    tw_reverse_dict = create_reverse_dict.__func__(tw_dict)
+    def __init__(self):
+        self.class_ = ''
+        self.text = ''
 
     def set_class(self, tw_class, modifier=''):
+        """
+        比如顏色，原先class_ bg-blue-500
+        改成 bg-red-500，不用將bg-blue-500 刪除後再增加 他會自動切換
+        """
+        # check data
         if modifier and modifier not in Tailwind.pseudo_classes:
             raise Exception(f'No Tailwind pseudo-class (modifier) named {modifier}')
         if tw_class not in Tailwind.tw_reverse_dict:
             raise Exception(f'No Tailwind class named {tw_class}')
+
         class_list = self.class_.split()
         if not modifier:
             for i in class_list:
@@ -429,5 +441,3 @@ class Tailwind:
                 self.set_class(c[1], c[0])
             else:
                 self.set_class(c[0])
-
-

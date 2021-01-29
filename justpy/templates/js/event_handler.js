@@ -15,19 +15,7 @@ function eventHandler(props, event, form_data, aux) {
         return;
     }
     let event_type = event.type;
-    if (event_type == 'input' && (props.jp_props.vue_type == 'quasar_component') && (props.jp_props.disable_input_event)) {
-        comp_dict[props.jp_props.id].value = event.target.value;
-        return;
-    }
-    if (event_type == 'focusin' && (props.jp_props.vue_type == 'quasar_component')) {
-        event_type = 'focus';
-        event.target.value = comp_dict[props.jp_props.id].value;
-    }
-    if (event_type == 'focusout' && (props.jp_props.vue_type == 'quasar_component')) {
-        event_type = 'blur';
-        event.target.value = comp_dict[props.jp_props.id].value;
-    }
-    e = {
+    let e = {
         'event_type': event_type,
         'id': props.jp_props.id,
         'class_name': props.jp_props.class_name,
@@ -46,7 +34,7 @@ function eventHandler(props, event, form_data, aux) {
             e[props.jp_props.additional_properties[i]] = event[props.jp_props.additional_properties[i]];
         }
     }
-    if ((event instanceof Event) && (event.target.type == 'file')) {
+    if ((event instanceof Event) && (event.target.type === 'file')) {
 
         files_chosen[event.target.id] = event.target.files;
         var files = [];
@@ -100,7 +88,7 @@ function eventHandler(props, event, form_data, aux) {
                 }
                 , modifiers.throttle.value);
         }
-    } else if (props.jp_props.debounce && (event.type == 'input')) {
+    } else if (props.jp_props.debounce && (event.type === 'input')) {
         clearTimeout(props.timeout);
         let set_e = e;
         props.timeout = setTimeout(function () {
@@ -112,7 +100,7 @@ function eventHandler(props, event, form_data, aux) {
     }
 
     // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
-    if (props.jp_props.scroll && (event.type == 'click')) {
+    if (props.jp_props.scroll && (event.type === 'click')) {
         event.preventDefault();
         c = document.getElementById(props.jp_props.scroll_to);
 

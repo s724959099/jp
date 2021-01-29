@@ -12,8 +12,6 @@ from fastapi.staticfiles import StaticFiles
 from itsdangerous import Signer
 from .htmlcomponents import *
 from .chartcomponents import *
-from .gridcomponents import *
-from .quasarcomponents import *
 from .pandas import *
 from .routing import Route, SetRoute
 from .utilities import run_task, create_delayed_task
@@ -56,11 +54,7 @@ STATIC_ROUTE = config('STATIC_MOUNT', cast=str, default='/static')
 STATIC_NAME = config('STATIC_NAME', cast=str, default='static')
 FAVICON = config('FAVICON', cast=str, default='')  # If False gets value from https://elimintz.github.io/favicon.png
 TAILWIND = config('TAILWIND', cast=bool, default=True)
-QUASAR = config('QUASAR', cast=bool, default=False)
-QUASAR_VERSION = config('QUASAR_VERSION', cast=str, default=None)
 HIGHCHARTS = config('HIGHCHARTS', cast=bool, default=True)
-AGGRID = config('AGGRID', cast=bool, default=True)
-AGGRID_ENTERPRISE = config('AGGRID_ENTERPRISE', cast=bool, default=False)
 
 NO_INTERNET = config('NO_INTERNET', cast=bool, default=True)
 
@@ -79,8 +73,7 @@ templates = Jinja2Templates(directory=TEMPLATES_DIRECTORY)
 
 component_file_list = create_component_file_list()
 
-template_options = {'tailwind': TAILWIND, 'quasar': QUASAR, 'quasar_version': QUASAR_VERSION, 'highcharts': HIGHCHARTS,
-                    'aggrid': AGGRID, 'aggrid_enterprise': AGGRID_ENTERPRISE,
+template_options = {'tailwind': TAILWIND, 'highcharts': HIGHCHARTS,
                     'static_name': STATIC_NAME, 'component_file_list': component_file_list, 'no_internet': NO_INTERNET}
 
 app = FastAPI(debug=DEBUG)
@@ -172,7 +165,7 @@ class Homepage(HTTPEndpoint):
         page_options = {'reload_interval': func_response_wp.reload_interval, 'body_style': func_response_wp.body_style,
                         'body_classes': func_response_wp.body_classes, 'css': func_response_wp.css,
                         'head_html': func_response_wp.head_html, 'body_html': func_response_wp.body_html,
-                        'display_url': func_response_wp.display_url, 'dark': func_response_wp.dark,
+                        'display_url': func_response_wp.display_url,
                         'title': func_response_wp.title, 'redirect': func_response_wp.redirect,
                         'highcharts_theme': func_response_wp.highcharts_theme, 'debug': func_response_wp.debug,
                         'events': func_response_wp.events,

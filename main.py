@@ -13,4 +13,5 @@ def event_demo():
     return wp
 
 
-jp.justpy(event_demo, websockets=False)
+# jp.justpy(event_demo, websockets=False)
+jp.justpy(event_demo)

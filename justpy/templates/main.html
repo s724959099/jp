@@ -14,9 +14,7 @@
   {#todo #}
   {% include 'js/event_handler.js' %}
   {% include 'js/html_component.js' %}
-  {% include 'js/quasar_component.js' %}
   {% include 'js/chartjp.js' %}
-  {% include 'js/aggrid.js' %}
   {% include 'js/editorjp.js' %}
 
   {% if page_options.title is not none %}
@@ -116,9 +114,6 @@
 
           app1.justpyComponents = msg.data;
 
-          break;
-        case 'page_mode_update':
-          Quasar.Dark.set(msg.dark);
           break;
         case 'websocket_update':
           websocket_id = msg.data;

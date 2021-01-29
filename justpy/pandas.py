@@ -1,6 +1,4 @@
 from .htmlcomponents import *
-from .chartcomponents import *
-from .gridcomponents import *
 from addict import Dict
 from io import StringIO
 

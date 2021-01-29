@@ -68,7 +68,6 @@ class WebPage:
         self.body_classes = ''
         self.reload_interval = None
         self.events = []
-        self.dark = False  # Set to True for Quasar dark mode (use for other dark modes also)
         self.data = {}
         WebPage.instances[self.page_id] = self
         for k, v in kwargs.items():
@@ -251,12 +250,15 @@ class TailwindUIPage(WebPage):
 
 class JustpyBaseComponent(Tailwind):
     next_id = 1
+    # for singletone id: instance
     instances = {}
     temp_flag = True
     delete_flag = True
     needs_deletion = False
 
     def __init__(self, **kwargs):
+        super().__init__()
+        # 每new 一個 self.id 就會增加一個 用在on evnet 等等功能上
         cls = JustpyBaseComponent
         temp = kwargs.get('temp', cls.temp_flag)
         delete_flag = kwargs.get('delete_flag', cls.delete_flag)
@@ -265,12 +267,15 @@ class JustpyBaseComponent(Tailwind):
         else:
             self.id = cls.next_id
             cls.next_id += 1
+
         self.events = []
         self.event_modifiers = Dict()
         self.transition = None
         self.allowed_events = []
 
     def initialize(self, **kwargs):
+        # for subclass __init__
+        # todo
         for k, v in kwargs.items():
             self.__setattr__(k, v)
         self.set_keyword_events(**kwargs)
@@ -279,6 +284,8 @@ class JustpyBaseComponent(Tailwind):
                 kwargs[com].add_component(self)
 
     def set_keyword_events(self, **kwargs):
+        # for subclass __init__
+        # todo
         for e in self.allowed_events:
             for prefix in ['', 'on', 'on_']:
                 if prefix + e in kwargs.keys():
@@ -302,6 +309,7 @@ class JustpyBaseComponent(Tailwind):
                 self.needs_deletion = False
 
     def on(self, event_type, func, debounce=None, throttle=None, immediate=False):
+        # todo
         if event_type in self.allowed_events:
             cls = JustpyBaseComponent
             if not self.id:
@@ -368,7 +376,8 @@ class JustpyBaseComponent(Tailwind):
                     continue
                 for websocket in list(websocket_dict.values()):
                     try:
-                        WebPage.loop.create_task(websocket.send_json({'type': 'component_update', 'data': component_dict}))
+                        WebPage.loop.create_task(
+                            websocket.send_json({'type': 'component_update', 'data': component_dict}))
                     except:
                         print('Problem with websocket in component update, ignoring')
         return self
@@ -450,7 +459,8 @@ class HTMLBaseComponent(JustpyBaseComponent):
     #                               'itemid', 'itemprop', 'itemref', 'itemscope', 'itemtype']
 
     # Additions to global attributes to add to attrs dict apart from id and style.
-    used_global_attributes = ['contenteditable', 'dir', 'tabindex', 'title', 'accesskey', 'draggable', 'lang', 'spellcheck']
+    used_global_attributes = ['contenteditable', 'dir', 'tabindex', 'title', 'accesskey', 'draggable', 'lang',
+                              'spellcheck']
 
     # https://developer.mozilla.org/en-US/docs/Web/HTML/Element
 
@@ -479,6 +489,7 @@ class HTMLBaseComponent(JustpyBaseComponent):
         self.set_focus = False
         self.class_ = ''
         self.slot = None
+        # todo
         self.scoped_slots = {}  # For Quasar and other Vue.js based components
         self.style = ''
         self.directives = []
@@ -491,6 +502,7 @@ class HTMLBaseComponent(JustpyBaseComponent):
         self.event_modifiers = Dict()
         self.additional_properties = []  # Additional fields to get from the JavasScript event object
         self.event_propagation = True  # If True events are propagated
+        # todo
         self.prop_list = []  # For components from libraries like quasar
 
         self.initialize(**kwargs)
@@ -870,7 +882,6 @@ class InputChangeOnly(Input):
 
 
 class Form(Div):
-
     html_tag = 'form'
     attributes = ['accept-charset', 'action', 'autocomplete', 'enctype', 'method', 'name', 'novalidate', 'target']
 
@@ -887,7 +898,6 @@ class Form(Div):
 
 
 class Label(Div):
-
     html_tag = 'label'
     attributes = ['for', 'form']  # In JustPy these are components, not ids of component like in HTML
 
@@ -909,7 +919,6 @@ class Label(Div):
 
 
 class Textarea(Input):
-
     html_tag = 'textarea'
     attributes = ['autofocus', 'cols', 'dirname', 'disabled', 'form', 'maxlength', 'name',
                   'placeholder', 'readonly', 'required', 'rows', 'wrap', 'value']
@@ -933,7 +942,6 @@ class Select(Input):
 
 
 class A(Div):
-
     html_tag = 'a'
     attributes = ['download', 'href', 'hreflang', 'media', 'ping', 'rel', 'target', 'type']
 
@@ -1275,7 +1283,8 @@ for tag in svg_tags_use:
     c_tag = tag[0].capitalize() + tag[1:]
     globals()[c_tag] = type(c_tag, (Div,),
                             {'html_tag': tag,
-                             'attributes': svg_attr_dict.get(tag, []) + svg_presentation_attributes + svg_filter_attributes})
+                             'attributes': svg_attr_dict.get(tag,
+                                                             []) + svg_presentation_attributes + svg_filter_attributes})
 
 
 # *************************** end SVG components
@@ -1527,7 +1536,6 @@ class BasicHTMLParser(HTMLParser):
             self.endtag_required = False
         else:
             self.endtag_required = True
-
 
     def handle_endtag(self, tag):
         c = self.containers.pop()
