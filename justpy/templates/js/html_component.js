@@ -66,26 +66,25 @@ Vue.component('html_component', {
       if (!this.$props.jp_props.event_propagation) {
         event.stopPropagation();
       }
-      if (event.type == 'dragstart') {
+      if (event.type === 'dragstart') {
         if (this.$props.jp_props.drag_options) {
           this.$refs['r' + this.$props.jp_props.id].className = this.$props.jp_props.drag_options['drag_classes']
         }
       }
-      if (event.type == 'dragover') {
+      if (event.type === 'dragover') {
         event.preventDefault();
         return
       }
-      if (event.type == 'drop') {
+      if (event.type === 'drop') {
 
       }
-      if (event.type == 'submit') {
+      if (event.type === 'submit') {
         let form_reference = this.$el;
         let props = this.$props;
         event.preventDefault();    //stop form from being submitted in the normal way
         event.stopPropagation();
         let form_elements_list = [];
         let form_elements = form_reference.elements;
-        let reader = new FileReader();
         let file_readers = [];
         let reader_ready = [];
         let file_content = [];
@@ -98,15 +97,14 @@ Vue.component('html_component', {
           for (let j = 0; j < attributes.length; j++) {
             let attr = attributes[j];
             attr_dict[attr.name] = attr.value;
-            if (attr.name == 'type') {
-              let input_type = attr.value;
+            if (attr.name === 'type') {
             }
           }
           attr_dict['value'] = form_elements[i].value;
           attr_dict['checked'] = form_elements[i].checked;
           attr_dict['id'] = form_elements[i].id;
 
-          if ((attr_dict['html_tag'] == 'input') && (input_type == 'file') && (files_chosen[attr_dict['id']])) {
+          if ((attr_dict['html_tag'] === 'input') && (input_type === 'file') && (files_chosen[attr_dict['id']])) {
             file_element_position = i;
             reader_ready = [];
             attr_dict['files'] = [];
@@ -185,7 +183,7 @@ Vue.component('html_component', {
       if (el.$el) el = el.$el;
       const class_list = props.classes.trim().replace(/\s\s+/g, ' ').split(' ');
       // Transition change from hidden to not hidden
-      if (props.transition.enter && this.previous_display == 'none' && (!class_list.includes('hidden'))) {
+      if (props.transition.enter && this.previous_display === 'none' && (!class_list.includes('hidden'))) {
 
         let enter_list = props.transition.enter.trim().replace(/\s\s+/g, ' ').split(' ');
         let enter_start_list = props.transition.enter_start.trim().replace(/\s\s+/g, ' ').split(' ');
@@ -205,7 +203,7 @@ Vue.component('html_component', {
         }, 3);
       }
       // Transition change from not hidden to hidden
-      else if (props.transition.leave && this.previous_display != 'none' && (class_list.includes('hidden'))) {
+      else if (props.transition.leave && this.previous_display !== 'none' && (class_list.includes('hidden'))) {
         let leave_list = props.transition.leave.trim().replace(/\s\s+/g, ' ').split(' ');
         let leave_start_list = props.transition.leave_start.trim().replace(/\s\s+/g, ' ').split(' ');
         let leave_end_list = props.transition.leave_end.trim().replace(/\s\s+/g, ' ').split(' ');
@@ -232,7 +230,6 @@ Vue.component('html_component', {
       let el = this.$refs['r' + this.$props.jp_props.id];
       const props = this.$props.jp_props;
       if (el.$el) el = el.$el;
-      const class_list = props.class_.trim().replace(/\s\s+/g, ' ').split(' ');
 
 
       let load_list = props.transition.load.trim().replace(/\s\s+/g, ' ').split(' ');
@@ -265,7 +262,7 @@ Vue.component('html_component', {
 
     for (let i = 0; i < props.events.length; i++) {
       let split_event = props.events[i].split('__');
-      if (split_event[1] == 'out')
+      if (split_event[1] === 'out')
         document.addEventListener(split_event[0], function (event) {
           if (el.contains(event.target))
             return;
@@ -284,7 +281,7 @@ Vue.component('html_component', {
         });
     }
 
-    if (props.input_type && (props.input_type != 'file')) {
+    if (props.input_type && (props.input_type !== 'file')) {
       el.value = props.value;
     }
 
@@ -308,19 +305,15 @@ Vue.component('html_component', {
     if (props.animation) this.animateFunction();
     if (this.$props.jp_props.id && props.transition) this.transitionFunction();
 
-    if (props.input_type && (props.input_type != 'file')) {
+    if (props.input_type && (props.input_type !== 'file')) {
 
       el.value = props.value;    //make sure that the input value is the correct one received from server
 
-      if (props.input_type == 'radio') {
-        if (props.checked) {
-          el.checked = true;  // This un-checks other radio buttons in group also
-        } else {
-          el.checked = false;
-        }
+      if (props.input_type === 'radio') {
+        el.checked = !!props.checked;
       }
 
-      if (props.input_type == 'checkbox') {
+      if (props.input_type === 'checkbox') {
         el.checked = props.checked;
       }
     }
