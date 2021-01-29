@@ -9,6 +9,7 @@ import logging
 import httpx
 import inspect
 import re
+from .util import try_save
 
 # todo
 tagfind_tolerant = re.compile(r'([a-zA-Z][^\t\n\r\f />\x00]*)(?:\s|/(?!>))*')
@@ -275,22 +276,6 @@ class HTMLBaseComponent(Tailwind):
     used_global_attributes = ['contenteditable', 'dir', 'tabindex', 'title', 'accesskey', 'draggable', 'lang',
                               'spellcheck']
 
-    # https://developer.mozilla.org/en-US/docs/Web/HTML/Element
-
-    # windows_events = ['afterprint', 'beforeprint', 'beforeunload', 'error', 'hashchange', 'load',
-    #                   'message', 'offline', 'online', 'pagehide', 'pageshow', 'popstate',
-    #                   'resize', 'storage', 'unload']
-    # form_events = ['blur', 'change', 'contextmenu', 'focus', 'input', 'invalid', 'reset', 'search', 'select', 'submit']
-    # keyboard_events = ['keydown', 'keypress', 'keyup']
-    # mouse_events = ['click', 'dblclick', 'mousedown', 'mousemove', 'mouseout', 'mouseover', 'mouseup', 'wheel',
-    #                 'mouseenter', 'mouseleave']
-    # allowed_events = ['click', 'mouseover', 'mouseout', 'mouseenter', 'mouseleave', 'input', 'change',
-    #                   'after', 'before', 'keydown', 'keyup', 'keypress', 'focus', 'blur']
-
-    # allowed_events = ['click', 'mouseover', 'mouseout', 'mouseenter', 'mouseleave', 'input', 'change',
-    #                   'after', 'before', 'keydown', 'keyup', 'keypress', 'focus', 'blur', 'submit',
-    #                   'dragstart', 'dragover', 'drop']
-
     def __init__(self, **kwargs):
         super().__init__()
         # 每new 一個 self.id 就會增加一個 用在on evnet 等等功能上
@@ -306,7 +291,6 @@ class HTMLBaseComponent(Tailwind):
         self.events = []
         self.event_modifiers = Dict()
         self.transition = None
-        self.allowed_events = []
         self.pages = {}  # Dictionary of pages the component is on. Not managed by framework.
         # self.model = []
 
@@ -411,31 +395,19 @@ class HTMLBaseComponent(Tailwind):
         d['directives'] = {}
         for i in self.directives:
             if i[0:2] == 'v-':  # It is a directive
-                try:
+                with try_save():
                     d['directives'][i[2:]] = getattr(self, i.replace('-', '_'))
-                except Exception:
-                    pass
         for i in self.prop_list + self.attributes + HTMLBaseComponent.used_global_attributes:
-            try:
+            with try_save():
                 d['attrs'][i] = getattr(self, i)
-            except Exception:
-                pass
-            if i in ['in', 'from']:  # Attributes that are also python reserved words
-                try:
+                if i in ['in', 'from']:  # Attributes that are also python reserved words
                     d['attrs'][i] = getattr(self, '_' + i)
-                except Exception:
-                    pass
-            if '-' in i:
-                s = i.replace('-', '_')  # kebab case to snake case
-                try:
+                if '-' in i:
+                    s = i.replace('-', '_')  # kebab case to snake case
                     d['attrs'][i] = getattr(self, s)
-                except Exception:
-                    pass
         # Name is a special case. Allow it to be defined for all
-        try:
+        with try_save():
             d['attrs']['name'] = self.name
-        except Exception:
-            pass
         d['scoped_slots'] = {}
         for s in self.scoped_slots:
             d['scoped_slots'][s] = self.scoped_slots[s].convert_object_to_dict()
