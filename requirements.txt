@@ -12,6 +12,7 @@ itsdangerous==1.1.0
 Jinja2==2.11.2
 loguru==0.5.3
 MarkupSafe==1.1.1
+psutil==5.8.0
 pydantic==1.7.3
 rfc3986==1.4.0
 sniffio==1.2.0

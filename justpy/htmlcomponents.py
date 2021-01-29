@@ -93,7 +93,7 @@ class WebPage:
             self.components.insert(position, child)
         return self
 
-    async def on_disconnect(self, websocket=None):
+    async def on_disconnect(self):
         if self.delete_flag:
             self.delete_components()
             self.remove_page()
@@ -281,7 +281,7 @@ class JustpyBaseComponent(Tailwind):
         self.transition = None
         self.allowed_events = []
         self.pages = {}  # Dictionary of pages the component is on. Not managed by framework.
-        self.model = []
+        # self.model = []
 
     def initialize(self, **kwargs):
         # for subclass __init__
@@ -394,7 +394,7 @@ class JustpyBaseComponent(Tailwind):
         self.pages[wp.page_id] = wp
 
     def set_model(self, value):
-        if hasattr(self, 'model'):
+        if hasattr(self, 'model') and len(self.model):
             if len(self.model) == 2:
                 self.model[0].data[self.model[1]] = value
             else:

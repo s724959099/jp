@@ -105,7 +105,7 @@ cookie_signer = Signer(str(SECRET_KEY))
 async def justpy_startup():
     WebPage.loop = asyncio.get_event_loop()
     JustPy.loop = WebPage.loop
-    if startup_func:
+    if startup_func and callable(startup_func):
         if inspect.iscoroutinefunction(startup_func):
             await startup_func()
         else:
@@ -136,6 +136,7 @@ class Homepage(HTTPEndpoint):
         #         new_cookie = True
         #         logger.debug(f'New session_id created: {request.session_id}')
         # 取得 route & function
+        func_to_run = None
         for route in Route.instances:
             func = route.matches(request['path'], request)
             if func:
@@ -283,7 +284,7 @@ class JustpyEvents(WebSocketEndpoint):
         WebPage.sockets[pid].pop(websocket.id)
         if not WebPage.sockets[pid]:
             WebPage.sockets.pop(pid)
-        await WebPage.instances[pid].on_disconnect(websocket)  # Run the specific page disconnect function
+        await WebPage.instances[pid].on_disconnect()
         # WebPage.loop.create_task(WebPage.instances[pid].on_disconnect(websocket))
         if MEMORY_DEBUG:
             print('************************')
