@@ -57,3 +57,6 @@ vue_type: (...)
 
 
 ```
+
+
+https://tailwindcomponents.com/component/table-1
