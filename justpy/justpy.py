@@ -1,22 +1,29 @@
 # todo remove startlette
-from starlette.responses import JSONResponse
-from starlette.endpoints import WebSocketEndpoint
-from starlette.endpoints import HTTPEndpoint
-from starlette.middleware.gzip import GZipMiddleware
-from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
-from fastapi.templating import Jinja2Templates
-from starlette.config import Config
+import json
+import logging
+from contextlib import asynccontextmanager
+from html.parser import HTMLParser
+from ssl import PROTOCOL_SSLv23
+
+import fnmatch
+import os
+import sys
+import traceback
+import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from itsdangerous import Signer
+from loguru import logger
+from starlette.config import Config
+from starlette.endpoints import HTTPEndpoint
+from starlette.endpoints import WebSocketEndpoint
+from starlette.middleware.gzip import GZipMiddleware
+from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
+from starlette.responses import JSONResponse
+
 from .pandas import *
 from .routing import Route
-import uvicorn, sys, os, traceback, fnmatch
-from loguru import logger
-import logging
-from ssl import PROTOCOL_SSLv23
-from contextlib import asynccontextmanager
-import json
 
 current_module = sys.modules[__name__]
 current_dir = os.path.dirname(current_module.__file__)
@@ -172,6 +179,7 @@ class Homepage(HTTPEndpoint):
         template_options['tailwind'] = func_response_wp.tailwind
         """
         template context
+        request: for render template
         page_id: 給前後端知道 是哪一個WebPage
         justpy_dict: wp.build_list 是vue 的data，render 長dom 用 
             也會轉成child 的html_component.$props.jp_props，在長出更子層
@@ -180,11 +188,13 @@ class Homepage(HTTPEndpoint):
         html: 如果html 有，就改使用html tag string
         """
         # todo check html or oop tag
-        context = {'page_id': func_response_wp.page_id,
-                   'justpy_dict': json.dumps(page_dict, default=str),
-                   'use_websockets': json.dumps(WebPage.use_websockets), 'options': template_options,
-                   'page_options': page_options,
-                   'html': func_response_wp.html}
+        context = {
+            'request': request,
+            'page_id': func_response_wp.page_id,
+            'justpy_dict': json.dumps(page_dict, default=str),
+            'use_websockets': json.dumps(WebPage.use_websockets), 'options': template_options,
+            'page_options': page_options,
+            'html': func_response_wp.html}
         # 轉成template resposne
         response = templates.TemplateResponse(func_response_wp.template_file, context)
 
@@ -418,3 +428,219 @@ def redirect(url):
     wp.add(Div())
     wp.redirect = url
     return wp
+
+
+class BasicHTMLParser(HTMLParser):
+    def error(self, message):
+        pass
+
+    # Void elements do not need closing tag
+    void_elements = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'menuitem', 'meta',
+                     'param', 'source', 'track', 'wbr']
+
+    def __init__(self, context, **kwargs):
+        super().__init__()
+        self.lasttag = None
+        self.context = context
+        self.level = -1
+        self.parse_id = 0
+        self.start_tag = True
+        self.components = []
+        self.name_dict = Dict()  # After parsing holds a dict with named components
+        self.dict_attribute = kwargs.get('dict_attribute', 'name')  # Use another attribute than name
+        self.root = Div(name='root')
+        self.containers = []
+        self.containers.append(self.root)
+        self.endtag_required = True
+        self.create_commands = kwargs.get('create_commands', True)  # If True, create the justpy command list
+        self.command_prefix = kwargs.get('command_prefix', 'jp.')  # Prefix for commands generated, defaults to 'jp.'
+        if self.create_commands:
+            # List of command strings (justpy python code to generate the element)
+            self.commands = [f"root = {self.command_prefix}Div()"]
+        else:
+            self.commands = ''
+
+    def parse_starttag(self, i):
+        # This is the original library method with two changes to stop tags and attributes being lower case
+        # This is required for the SVG tags which can be camelcase
+        # https://github.com/python/cpython/blob/3.7/Lib/html/parser.py
+        self.__starttag_text = None
+        endpos = self.check_for_whole_start_tag(i)
+        if endpos < 0:
+            return endpos
+        rawdata = self.rawdata
+        self.__starttag_text = rawdata[i:endpos]
+
+        # Now parse the data between i+1 and j into a tag and attrs
+        attrs = []
+        match = tagfind_tolerant.match(rawdata, i + 1)
+        assert match, 'unexpected call to parse_starttag()'
+        k = match.end()
+        # self.lasttag = tag = match.group(1).lower() was the original
+        self.lasttag = tag = match.group(1)
+        while k < endpos:
+            m = attrfind_tolerant.match(rawdata, k)
+            if not m:
+                break
+            attrname, rest, attrvalue = m.group(1, 2, 3)
+            if not rest:
+                attrvalue = None
+            elif attrvalue[:1] == '\'' == attrvalue[-1:] or \
+                    attrvalue[:1] == '"' == attrvalue[-1:]:
+                attrvalue = attrvalue[1:-1]
+            if attrvalue:
+                attrvalue = unescape(attrvalue)
+            # attrs.append((attrname.lower(), attrvalue)) was the original
+            attrs.append((attrname, attrvalue))
+            k = m.end()
+
+        end = rawdata[k:endpos].strip()
+        if end not in (">", "/>"):
+            lineno, offset = self.getpos()
+            if "\n" in self.__starttag_text:
+                lineno = lineno + self.__starttag_text.count("\n")
+                offset = len(self.__starttag_text) \
+                         - self.__starttag_text.rfind("\n")
+            else:
+                offset = offset + len(self.__starttag_text)
+            self.handle_data(rawdata[i:endpos])
+            return endpos
+        if end.endswith('/>'):
+            # XHTML-style empty tag: <span attr="value" />
+            self.handle_startendtag(tag, attrs)
+        else:
+            self.handle_starttag(tag, attrs)
+            if tag in self.CDATA_CONTENT_ELEMENTS:
+                self.set_cdata_mode(tag)
+        return endpos
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+        if self.endtag_required:
+            self.handle_endtag(tag)
+        else:
+            self.endtag_required = True
+
+    def handle_starttag(self, tag, attrs):
+        self.level += 1
+        self.parse_id += 1
+        c = component_by_tag(tag)
+        c.parse_id = self.parse_id
+        command_string = f''
+        if c is None:
+            print(tag, 'No such tag, Div being used instead *****************************************')
+            c = Div()
+        for attr in attrs:
+            attr = list(attr)
+            attr[0] = attr[0].replace('-', '_')
+            if attr[0][0] == '@':
+                if attr[1] in self.context.f_locals:
+                    c.on(attr[0][1:], self.context.f_locals[attr[1]])
+                elif attr[1] in self.context.f_globals:
+                    c.on(attr[0][1:], self.context.f_globals[attr[1]])
+                else:
+                    cls = JustpyBaseComponent
+                    if not c.id:
+                        c.id = cls.next_id
+                        cls.next_id += 1
+                    fn_string = f'def oneliner{c.id}(self, msg):\n {attr[1]}'  # remove first and last charcters which are quotes
+                    exec(fn_string)
+                    c.on(attr[0][1:], locals()[f'oneliner{c.id}'])
+                continue
+            if attr[0][0] == ':':
+                attr[0] = attr[0][1:]
+                attr[1] = eval(attr[1])
+            if attr[0] == 'id':
+                c.id = attr[1]
+                continue
+            if attr[1] is None:
+                setattr(c, attr[0], True)
+                attr[1] = True
+            else:
+                setattr(c, attr[0], attr[1])
+            # Add to name to dict of named components. Each entry can be a list of components to allow multiple components with same name
+            if attr[0] == self.dict_attribute:
+                if attr[1] not in self.name_dict:
+                    self.name_dict[attr[1]] = c
+                else:
+                    if not isinstance(self.name_dict[attr[1]], (list,)):
+                        self.name_dict[attr[1]] = [self.name_dict[attr[1]]]
+                    self.name_dict[attr[1]].append(c)
+            if attr[0] == 'class':
+                c.class_ = attr[1]
+                attr[0] = 'class_'
+            # Handle attributes that are also python reserved words
+            if attr[0] in ['in', 'from']:
+                attr[0] = '_' + attr[0]
+
+            if self.create_commands:
+                if isinstance(attr[1], str):
+                    command_string = f"{command_string}{attr[0]}='{attr[1]}', "
+                else:
+                    command_string = f'{command_string}{attr[0]}={attr[1]}, '
+
+        if self.create_commands:
+            if id(self.containers[-1]) == id(self.root):
+                command_string = f'c{c.parse_id} = {self.command_prefix}{c.class_name}({command_string}a=root)'
+            else:
+                command_string = f'c{c.parse_id} = {self.command_prefix}{c.class_name}({command_string}a=c{self.containers[-1].parse_id})'
+            self.commands.append(command_string)
+
+        self.containers[-1].add_component(c)
+        self.containers.append(c)
+
+        if tag in BasicHTMLParser.void_elements:
+            self.handle_endtag(tag)
+            self.endtag_required = False
+        else:
+            self.endtag_required = True
+
+    def handle_endtag(self, tag):
+        c = self.containers.pop()
+        del c.parse_id
+        self.level -= 1
+
+    def handle_data(self, data):
+        data = data.strip()
+        if data:
+            self.containers[-1].text = data
+            data = data.replace("'", "\\'")
+            if self.create_commands:
+                self.commands[-1] = f"{self.commands[-1][:-1]}, text='{data}')"
+        return
+
+    def handle_comment(self, data):
+        pass
+
+    def handle_entityref(self, name):
+        c = chr(name2codepoint[name])
+
+    def handle_charref(self, name):
+        if name.startswith('x'):
+            c = chr(int(name[1:], 16))
+        else:
+            c = chr(int(name))
+
+    def handle_decl(self, data):
+        pass
+
+
+def justpy_parser(html_string, context, **kwargs):
+    '''
+    Returns root component of the parser with the name_dict as attribute.
+    If root component has only one child, returns the child
+    '''
+    parser = BasicHTMLParser(context, **kwargs)
+    parser.feed(html_string)
+    if len(parser.root.components) == 1:
+        parser_result = parser.root.components[0]
+    else:
+        parser_result = parser.root
+    parser_result.name_dict = parser.name_dict
+    parser_result.commands = parser.commands
+    parser_result.initialize(**kwargs)
+    return parser_result
+
+
+def parse_html(html_string, **kwargs):
+    return justpy_parser(html_string, inspect.stack()[1][0], **kwargs)
