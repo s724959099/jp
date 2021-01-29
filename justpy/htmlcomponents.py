@@ -527,9 +527,9 @@ class HTMLBaseComponent(JustpyBaseComponent):
     def add_scoped_slot(self, slot, c):
         self.scoped_slots[slot] = c
 
-    def to_html(self, indent=0, indent_step=0, format=True):
+    def to_html(self, indent=0, indent_step=0, format_=True):
         block_indent = ' ' * indent
-        if format:
+        if format_:
             ws = '\n'
         else:
             ws = ''
@@ -687,9 +687,9 @@ class Div(HTMLBaseComponent):
     def last(self):
         return self.components[-1]
 
-    def to_html(self, indent=0, indent_step=0, format=True):
+    def to_html(self, indent=0, indent_step=0, format_=True):
         block_indent = ' ' * indent
-        if format:
+        if format_:
             ws = '\n'
         else:
             ws = ''
@@ -712,7 +712,7 @@ class Div(HTMLBaseComponent):
         except Exception:
             pass
         for c in self.components:
-            s = f'{s}{c.to_html(indent + indent_step, indent_step, format)}'
+            s = f'{s}{c.to_html(indent + indent_step, indent_step, format_)}'
         s = f'{s}{block_indent}</{self.html_tag}>{ws}'
         return s
 
@@ -1146,17 +1146,109 @@ _attr_dict = {'a': ['download', 'href', 'hreflang', 'media', 'ping', 'rel', 'tar
               'track': ['default', 'kind', 'label', 'src', 'srclang'],
               'video': ['autoplay', 'controls', 'height', 'loop', 'muted', 'poster', 'preload', 'src', 'width']}
 
+
 # Name definition for static syntax analysers
 # Classes are defined dynamically right after, this is just to assist code editors
 
-Address = Article = Aside = Footer = Header = H1 = H2 = H3 = H4 = H5 = H6 = Main = Nav = Section = Blockquote = Dd = Dl = Dt = Figcaption = Figure = Hr = Li = Ol = P = Pre = Ul = Abbr = B = Bdi = Bdo = Br = Cite = Code = Data = Dfn = Em = I = Kbd = Mark = Q = Rb = Rp = Rt = Rtc = Ruby = S = Samp = Small = Span = Strong = Sub = Sup = Time = Tt = U = Var = Wbr = Area = Audio = Img = Map = Track = Video = Embed = Iframe = Object = Param = Picture = Source = Del = Ins = Caption = Col = Colgroup = Table = Tbody = Td = Tfoot = Th = Thead = Tr = Button = Fieldset = Legend = Meter = Optgroup = Option = Progress = Details = Summary = None
+
+def creaet_html_class_factory(tag_captitalize_name):
+    return type(tag_captitalize_name.capitalize(), (Div,),
+                {'html_tag': tag_captitalize_name.lower(),
+                 'attributes': _attr_dict.get(tag_captitalize_name.lower(), [])})
+
+
+Address = creaet_html_class_factory('Address')
+Article = creaet_html_class_factory('Article')
+Aside = creaet_html_class_factory('Aside')
+Footer = creaet_html_class_factory('Footer')
+Header = creaet_html_class_factory('Header')
+H1 = creaet_html_class_factory('H1')
+H2 = creaet_html_class_factory('H2')
+H3 = creaet_html_class_factory('H3')
+H4 = creaet_html_class_factory('H4')
+H5 = creaet_html_class_factory('H5')
+H6 = creaet_html_class_factory('H6')
+Main = creaet_html_class_factory('Main')
+Nav = creaet_html_class_factory('Nav')
+Section = creaet_html_class_factory('Section')
+Blockquote = creaet_html_class_factory('Blockquote')
+Dd = creaet_html_class_factory('Dd')
+Dl = creaet_html_class_factory('Dl')
+Dt = creaet_html_class_factory('Dt')
+Figcaption = creaet_html_class_factory('Figcaption')
+Figure = creaet_html_class_factory('Figure')
+Hr = creaet_html_class_factory('Hr')
+Li = creaet_html_class_factory('Li')
+Ol = creaet_html_class_factory('Ol')
+P = creaet_html_class_factory('P')
+Pre = creaet_html_class_factory('Pre')
+Ul = creaet_html_class_factory('Ul')
+Abbr = creaet_html_class_factory('Abbr')
+B = creaet_html_class_factory('B')
+Bdi = creaet_html_class_factory('Bdi')
+Bdo = creaet_html_class_factory('Bdo')
+Br = creaet_html_class_factory('Br')
+Cite = creaet_html_class_factory('Cite')
+Code = creaet_html_class_factory('Code')
+Data = creaet_html_class_factory('Data')
+Dfn = creaet_html_class_factory('Dfn')
+Em = creaet_html_class_factory('Em')
+I = creaet_html_class_factory('I')
+Kbd = creaet_html_class_factory('Kbd')
+Mark = creaet_html_class_factory('Mark')
+Q = creaet_html_class_factory('Q')
+Rb = creaet_html_class_factory('Rb')
+Rp = creaet_html_class_factory('Rp')
+Rt = creaet_html_class_factory('Rt')
+Rtc = creaet_html_class_factory('Rtc')
+Ruby = creaet_html_class_factory('Ruby')
+S = creaet_html_class_factory('S')
+Samp = creaet_html_class_factory('Samp')
+Small = creaet_html_class_factory('Small')
+Span = creaet_html_class_factory('Span')
+Strong = creaet_html_class_factory('Strong')
+Sub = creaet_html_class_factory('Sub')
+Sup = creaet_html_class_factory('Sup')
+Time = creaet_html_class_factory('Time')
+Tt = creaet_html_class_factory('Tt')
+U = creaet_html_class_factory('U')
+Var = creaet_html_class_factory('Var')
+Wbr = creaet_html_class_factory('Wbr')
+Area = creaet_html_class_factory('Area')
+Audio = creaet_html_class_factory('Audio')
+Img = creaet_html_class_factory('Img')
+Map = creaet_html_class_factory('Map')
+Track = creaet_html_class_factory('Track')
+Video = creaet_html_class_factory('Video')
+Embed = creaet_html_class_factory('Embed')
+Iframe = creaet_html_class_factory('Iframe')
+Object = creaet_html_class_factory('Object')
+Param = creaet_html_class_factory('Param')
+Picture = creaet_html_class_factory('Picture')
+Source = creaet_html_class_factory('Source')
+Del = creaet_html_class_factory('Del')
+Ins = creaet_html_class_factory('Ins')
+Caption = creaet_html_class_factory('Caption')
+Col = creaet_html_class_factory('Col')
+Colgroup = creaet_html_class_factory('Colgroup')
+Table = creaet_html_class_factory('Table')
+Tbody = creaet_html_class_factory('Tbody')
+Td = creaet_html_class_factory('Td')
+Tfoot = creaet_html_class_factory('Tfoot')
+Th = creaet_html_class_factory('Th')
+Thead = creaet_html_class_factory('Thead')
+Tr = creaet_html_class_factory('Tr')
+Button = creaet_html_class_factory('Button')
+Fieldset = creaet_html_class_factory('Fieldset')
+Legend = creaet_html_class_factory('Legend')
+Meter = creaet_html_class_factory('Meter')
+Optgroup = creaet_html_class_factory('Optgroup')
+Option = creaet_html_class_factory('Option')
+Progress = creaet_html_class_factory('Progress')
+Details = creaet_html_class_factory('Details')
+Summary = creaet_html_class_factory('Summary')
+
 Animate = AnimateMotion = AnimateTransform = Circle = ClipPath = Defs = Desc = Discard = Ellipse = FeBlend = FeColorMatrix = FeComponentTransfer = FeComposite = FeConvolveMatrix = FeDiffuseLighting = FeDisplacementMap = FeDistantLight = FeDropShadow = FeFlood = FeFuncA = FeFuncB = FeFuncG = FeFuncR = FeGaussianBlur = FeImage = FeMerge = FeMergeNode = FeMorphology = FeOffset = FePointLight = FeSpecularLighting = FeSpotLight = FeTile = FeTurbulence = Filter = ForeignObject = G = Image = Line = LinearGradient = Marker = Mask = Metadata = Mpath = Path = Pattern = Polygon = Polyline = RadialGradient = Rect = Set = Stop = Svg = Switch = Symbol = Text = TextPath = Tspan = Use = View = None
-
-# Tag classes defined dynamically at runtime
-for tag in _tag_create_list:
-    globals()[tag.capitalize()] = type(tag.capitalize(), (Div,),
-                                       {'html_tag': tag, 'attributes': _attr_dict.get(tag, [])})
-
 # **********************************
 # SVG components
 # https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute
@@ -1383,249 +1475,6 @@ class AutoTable(Table):
 
 
 get_tag = component_by_tag
-
-
-class BasicHTMLParser(HTMLParser):
-    # Void elements do not need closing tag
-    void_elements = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'menuitem', 'meta',
-                     'param', 'source', 'track', 'wbr']
-
-    def __init__(self, context, **kwargs):
-        super().__init__()
-        self.context = context
-        self.level = -1
-        self.parse_id = 0
-        self.start_tag = True
-        self.components = []
-        self.name_dict = Dict()  # After parsing holds a dict with named components
-        self.dict_attribute = kwargs.get('dict_attribute', 'name')  # Use another attribute than name
-        self.root = Div(name='root')
-        self.containers = []
-        self.containers.append(self.root)
-        self.endtag_required = True
-        self.create_commands = kwargs.get('create_commands', True)  # If True, create the justpy command list
-        self.command_prefix = kwargs.get('command_prefix', 'jp.')  # Prefix for commands generated, defaults to 'jp.'
-        if self.create_commands:
-            # List of command strings (justpy python code to generate the element)
-            self.commands = [f"root = {self.command_prefix}Div()"]
-        else:
-            self.commands = ''
-
-    def parse_starttag(self, i):
-        # This is the original library method with two changes to stop tags and attributes being lower case
-        # This is required for the SVG tags which can be camelcase
-        # https://github.com/python/cpython/blob/3.7/Lib/html/parser.py
-        self.__starttag_text = None
-        endpos = self.check_for_whole_start_tag(i)
-        if endpos < 0:
-            return endpos
-        rawdata = self.rawdata
-        self.__starttag_text = rawdata[i:endpos]
-
-        # Now parse the data between i+1 and j into a tag and attrs
-        attrs = []
-        match = tagfind_tolerant.match(rawdata, i + 1)
-        assert match, 'unexpected call to parse_starttag()'
-        k = match.end()
-        # self.lasttag = tag = match.group(1).lower() was the original
-        self.lasttag = tag = match.group(1)
-        while k < endpos:
-            m = attrfind_tolerant.match(rawdata, k)
-            if not m:
-                break
-            attrname, rest, attrvalue = m.group(1, 2, 3)
-            if not rest:
-                attrvalue = None
-            elif attrvalue[:1] == '\'' == attrvalue[-1:] or \
-                    attrvalue[:1] == '"' == attrvalue[-1:]:
-                attrvalue = attrvalue[1:-1]
-            if attrvalue:
-                attrvalue = unescape(attrvalue)
-            # attrs.append((attrname.lower(), attrvalue)) was the original
-            attrs.append((attrname, attrvalue))
-            k = m.end()
-
-        end = rawdata[k:endpos].strip()
-        if end not in (">", "/>"):
-            lineno, offset = self.getpos()
-            if "\n" in self.__starttag_text:
-                lineno = lineno + self.__starttag_text.count("\n")
-                offset = len(self.__starttag_text) \
-                         - self.__starttag_text.rfind("\n")
-            else:
-                offset = offset + len(self.__starttag_text)
-            self.handle_data(rawdata[i:endpos])
-            return endpos
-        if end.endswith('/>'):
-            # XHTML-style empty tag: <span attr="value" />
-            self.handle_startendtag(tag, attrs)
-        else:
-            self.handle_starttag(tag, attrs)
-            if tag in self.CDATA_CONTENT_ELEMENTS:
-                self.set_cdata_mode(tag)
-        return endpos
-
-    def handle_startendtag(self, tag, attrs):
-        self.handle_starttag(tag, attrs)
-        if self.endtag_required:
-            self.handle_endtag(tag)
-        else:
-            self.endtag_required = True
-
-    def handle_starttag(self, tag, attrs):
-        self.level = self.level + 1
-        self.parse_id += 1
-        c = component_by_tag(tag)
-        c.parse_id = self.parse_id
-        command_string = f''
-        if c is None:
-            print(tag, 'No such tag, Div being used instead *****************************************')
-            c = Div()
-        for attr in attrs:
-            attr = list(attr)
-            attr[0] = attr[0].replace('-', '_')
-            if attr[0][0] == '@':
-                if attr[1] in self.context.f_locals:
-                    c.on(attr[0][1:], self.context.f_locals[attr[1]])
-                elif attr[1] in self.context.f_globals:
-                    c.on(attr[0][1:], self.context.f_globals[attr[1]])
-                else:
-                    cls = JustpyBaseComponent
-                    if not c.id:
-                        c.id = cls.next_id
-                        cls.next_id += 1
-                    fn_string = f'def oneliner{c.id}(self, msg):\n {attr[1]}'  # remove first and last charcters which are quotes
-                    exec(fn_string)
-                    c.on(attr[0][1:], locals()[f'oneliner{c.id}'])
-                continue
-            if attr[0][0] == ':':
-                attr[0] = attr[0][1:]
-                attr[1] = eval(attr[1])
-            if attr[0] == 'id':
-                c.id = attr[1]
-                continue
-            if attr[1] is None:
-                setattr(c, attr[0], True)
-                attr[1] = True
-            else:
-                setattr(c, attr[0], attr[1])
-            # Add to name to dict of named components. Each entry can be a list of components to allow multiple components with same name
-            if attr[0] == self.dict_attribute:
-                if attr[1] not in self.name_dict:
-                    self.name_dict[attr[1]] = c
-                else:
-                    if not isinstance(self.name_dict[attr[1]], (list,)):
-                        self.name_dict[attr[1]] = [self.name_dict[attr[1]]]
-                    self.name_dict[attr[1]].append(c)
-            if attr[0] == 'class':
-                c.class_ = attr[1]
-                attr[0] = 'class_'
-            # Handle attributes that are also python reserved words
-            if attr[0] in ['in', 'from']:
-                attr[0] = '_' + attr[0]
-
-            if self.create_commands:
-                if isinstance(attr[1], str):
-                    command_string = f"{command_string}{attr[0]}='{attr[1]}', "
-                else:
-                    command_string = f'{command_string}{attr[0]}={attr[1]}, '
-
-        if self.create_commands:
-            if id(self.containers[-1]) == id(self.root):
-                command_string = f'c{c.parse_id} = {self.command_prefix}{c.class_name}({command_string}a=root)'
-            else:
-                command_string = f'c{c.parse_id} = {self.command_prefix}{c.class_name}({command_string}a=c{self.containers[-1].parse_id})'
-            self.commands.append(command_string)
-
-        self.containers[-1].add_component(c)
-        self.containers.append(c)
-
-        if tag in BasicHTMLParser.void_elements:
-            self.handle_endtag(tag)
-            self.endtag_required = False
-        else:
-            self.endtag_required = True
-
-    def handle_endtag(self, tag):
-        c = self.containers.pop()
-        del c.parse_id
-        self.level = self.level - 1
-
-    def handle_data(self, data):
-        data = data.strip()
-        if data:
-            self.containers[-1].text = data
-            data = data.replace("'", "\\'")
-            if self.create_commands:
-                self.commands[-1] = f"{self.commands[-1][:-1]}, text='{data}')"
-        return
-
-    def handle_comment(self, data):
-        pass
-
-    def handle_entityref(self, name):
-        c = chr(name2codepoint[name])
-
-    def handle_charref(self, name):
-        if name.startswith('x'):
-            c = chr(int(name[1:], 16))
-        else:
-            c = chr(int(name))
-
-    def handle_decl(self, data):
-        pass
-
-
-def justPY_parser(html_string, context, **kwargs):
-    '''
-    Returns root component of the parser with the name_dict as attribute.
-    If root component has only one child, returns the child
-    '''
-    parser = BasicHTMLParser(context, **kwargs)
-    parser.feed(html_string)
-    if len(parser.root.components) == 1:
-        parser_result = parser.root.components[0]
-    else:
-        parser_result = parser.root
-    parser_result.name_dict = parser.name_dict
-    parser_result.commands = parser.commands
-    parser_result.initialize(**kwargs)
-    return parser_result
-
-
-def parse_html(html_string, **kwargs):
-    return justPY_parser(html_string, inspect.stack()[1][0], **kwargs)
-
-
-def parse_html_file(html_file, **kwargs):
-    with open(html_file, encoding="utf-8") as f:
-        return justPY_parser(f.read(), inspect.stack()[1][0], **kwargs)
-
-
-try:
-    import aiofiles
-
-    _has_aiofiles = True
-except Exception:
-    _has_aiofiles = False
-
-if _has_aiofiles:
-    async def parse_html_file_async(html_file, **kwargs):
-        async with aiofiles.open(html_file, encoding="utf-8") as f:
-            s = await f.read()
-        return justPY_parser(s, **kwargs)
-else:
-    async def parse_html_file_async(html_file, **kwargs):
-        raise Exception('aiofiles not installed')
-
-
-async def get(url, format='json'):
-    async with httpx.AsyncClient() as client:
-        result = await client.get(url)
-    if format == 'json':
-        return result.json()
-    else:
-        return result.text
 
 
 def get_websocket(event_data):
