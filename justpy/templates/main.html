@@ -54,10 +54,11 @@
     } else {
       protocol_string = 'ws://'
     }
+    let socket;
     if (location.port) {
-      let socket = new WebSocket(protocol_string + document.domain + ':' + location.port);
+      socket = new WebSocket(protocol_string + document.domain + ':' + location.port);
     } else {
-      let socket = new WebSocket(protocol_string + document.domain);
+      socket = new WebSocket(protocol_string + document.domain);
     }
 
     socket.addEventListener('open', function (event) {
