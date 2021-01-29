@@ -199,15 +199,15 @@ class WebPage:
         await asyncio.sleep(delay)
         return await self.update()
 
-    def to_html(self, indent=0, indent_step=0, format=True):
+    def to_html(self, indent=0, indent_step=0, format_=True):
         block_indent = ' ' * indent
-        if format:
+        if format_:
             ws = '\n'
         else:
             ws = ''
         s = f'{block_indent}<div>{ws}'
         for c in self.components:
-            s = f'{s}{c.to_html(indent + indent_step, indent_step, format)}'
+            s = f'{s}{c.to_html(indent + indent_step, indent_step, format_)}'
         s = f'{s}{block_indent}</div>{ws}'
         return s
 
@@ -958,6 +958,7 @@ class A(Div):
 
         self.href = None
         self.bookmark = None  # The component on page to jump to or scroll to
+        self.scroll_to = None
         self.title = ''
         self.rel = "noopener noreferrer"
         self.download = None  # If attribute is set, file is downloaded, only works html 5  https://www.w3schools.com/tags/att_a_download.asp
@@ -1058,6 +1059,9 @@ class TabGroup(Div):
         self.animation_next = 'slideInRight'
         self.animation_prev = 'slideOutLeft'
         self.animation_speed = 'faster'  # '' | 'slow' | 'slower' | 'fast'  | 'faster'
+
+        self.wrapper_div_classes = None
+        self.wrapper_div = None
 
         super().__init__(**kwargs)
 
