@@ -17,7 +17,8 @@ from .quasarcomponents import *
 from .pandas import *
 from .routing import Route, SetRoute
 from .utilities import run_task, create_delayed_task
-import uvicorn, logging, uuid, sys, os, traceback, fnmatch
+import uvicorn, sys, os, traceback, fnmatch
+from loguru import logger
 from ssl import PROTOCOL_SSLv23
 from contextlib import asynccontextmanager
 
@@ -38,9 +39,10 @@ if LATENCY:
 SESSIONS = config('SESSIONS', cast=bool, default=True)
 SESSION_COOKIE_NAME = config('SESSION_COOKIE_NAME', cast=str, default='jp_token')
 SECRET_KEY = config('SECRET_KEY', default='$$$my_secret_string$$$')  # Make sure to change when deployed
-LOGGING_LEVEL = config('LOGGING_LEVEL', default=logging.WARNING)
-JustPy.LOGGING_LEVEL = LOGGING_LEVEL
-UVICORN_LOGGING_LEVEL = config('UVICORN_LOGGING_LEVEL', default='WARNING').lower()
+# todo
+# LOGGING_LEVEL = config('LOGGING_LEVEL', default=logger.WARNING)
+# JustPy.LOGGING_LEVEL = LOGGING_LEVEL
+# UVICORN_LOGGING_LEVEL = config('UVICORN_LOGGING_LEVEL', default='WARNING').lower()
 COOKIE_MAX_AGE = config('COOKIE_MAX_AGE', cast=int, default=60 * 60 * 24 * 7)  # One week in seconds
 HOST = config('HOST', cast=str, default='127.0.0.1')
 PORT = config('PORT', cast=int, default=8000)
@@ -80,7 +82,6 @@ component_file_list = create_component_file_list()
 template_options = {'tailwind': TAILWIND, 'quasar': QUASAR, 'quasar_version': QUASAR_VERSION, 'highcharts': HIGHCHARTS,
                     'aggrid': AGGRID, 'aggrid_enterprise': AGGRID_ENTERPRISE,
                     'static_name': STATIC_NAME, 'component_file_list': component_file_list, 'no_internet': NO_INTERNET}
-logging.basicConfig(level=LOGGING_LEVEL, format='%(levelname)s %(module)s: %(message)s')
 
 app = FastAPI(debug=DEBUG)
 app.mount(STATIC_ROUTE, StaticFiles(directory=STATIC_DIRECTORY), name=STATIC_NAME)
@@ -143,7 +144,7 @@ class Homepage(HTTPEndpoint):
         #         request.state.session_id = str(uuid.uuid4().hex)
         #         request.session_id = request.state.session_id
         #         new_cookie = True
-        #         logging.debug(f'New session_id created: {request.session_id}')
+        #         logger.debug(f'New session_id created: {request.session_id}')
         # 取得 route & function
         for route in Route.instances:
             func = route.matches(request['path'], request)
@@ -225,7 +226,7 @@ class Homepage(HTTPEndpoint):
         return JSONResponse(result)
 
     async def on_disconnect(self, page_id):
-        logging.info(f'In disconnect Homepage')
+        logger.info(f'In disconnect Homepage')
         if page_id in WebPage.instances:
             await WebPage.instances[page_id].on_disconnect()  # Run the specific page disconnect function
         return JSONResponse(False)
@@ -239,7 +240,7 @@ class JustpyEvents(WebSocketEndpoint):
         await websocket.accept()
         websocket.id = JustpyEvents.socket_id
         websocket.open = True
-        logging.debug(f'Websocket {JustpyEvents.socket_id} connected')
+        logger.debug(f'Websocket {JustpyEvents.socket_id} connected')
         JustpyEvents.socket_id += 1
         # Send back socket_id to page
         # await websocket.send_json({'type': 'websocket_update', 'data': websocket.id})
@@ -249,7 +250,7 @@ class JustpyEvents(WebSocketEndpoint):
         """
         Method to accept and act on data received from websocket
         """
-        logging.debug('%s %s', f'Socket {websocket.id} data received:', data)
+        logger.debug(f'Socket {websocket.id} data received: {data}')
         data_dict = json.loads(data)
         msg_type = data_dict['type']
         # data_dict['event_data']['type'] = msg_type
@@ -322,10 +323,12 @@ async def handle_evnet_beofore_and_after(c, event_data):
 async def handle_event(data_dict, com_type=0, page_event=False):
     # com_type 0: websocket, com_type 1: ajax
     CONNECTION_MAPPING = {0: 'websocket', 1: 'ajax'}
-    logging.info('%s %s %s', 'In event handler:', CONNECTION_MAPPING[com_type], str(data_dict))
+    build_list = None
+
+    logger.info(f'In event handler: {CONNECTION_MAPPING[com_type]} {str(data_dict)}')
     event_data = data_dict['event_data']
     if event_data['page_id'] not in WebPage.instances:
-        logging.warning('No page to load')
+        logger.warning('No page to load')
         return
     p = WebPage.instances[event_data['page_id']]
 
@@ -352,17 +355,16 @@ async def handle_event(data_dict, com_type=0, page_event=False):
                 event_result = await c.run_event_function(event_data['event_type'], event_data, True)
             else:
                 event_result = None
-                logging.debug('%s %s %s %s', c, 'has no ', event_data['event_type'], ' event handler')
-            logging.debug('%s %s', 'Event result:', event_result)
+                logger.debug(f'{c} has no {event_data["event_type"]} event handler')
+            logger.debug(f'Event result: {event_result}')
         except Exception:
             # raise Exception(e)
             if CRASH:
                 print(traceback.format_exc())
                 sys.exit(1)
             event_result = None
-            # logging.info('%s %s', 'Event result:', '\u001b[47;1m\033[93mAttempting to run event handler:' + str(e) + '\033[0m')
-            logging.error('%s %s', 'Event result:', '\u001b[47;1m\033[93mError in event handler:\033[0m')
-            logging.error('%s', traceback.format_exc())
+            logger.error('Event result: \u001b[47;1m\033[93mError in event handler:\033[0m')
+            logger.error(traceback.format_exc())
 
     # If page is not to be updated, the event_function should return anything but None
 
