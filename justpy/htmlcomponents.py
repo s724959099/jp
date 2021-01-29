@@ -115,7 +115,7 @@ class WebPage:
     def remove_component(self, component):
         try:
             self.components.remove(component)
-        except:
+        except Exception:
             raise Exception('Component cannot be removed because it was not in Webpage')
         return self
 
@@ -138,7 +138,7 @@ class WebPage:
     async def run_javascript(self, javascript_string, *, request_id=None, send=True):
         try:
             websocket_dict = WebPage.sockets[self.page_id]
-        except:
+        except Exception:
             return self
         dict_to_send = {'type': 'run_javascript', 'data': javascript_string, 'request_id': request_id, 'send': send}
         await asyncio.gather(*[websocket.send_json(dict_to_send) for websocket in list(websocket_dict.values())],
@@ -151,7 +151,7 @@ class WebPage:
     async def update_old(self, *, built_list=None):
         try:
             websocket_dict = WebPage.sockets[self.page_id]
-        except:
+        except Exception:
             return self
         if not built_list:
             component_build = self.build_list()
@@ -165,14 +165,14 @@ class WebPage:
                                                                                'redirect': self.redirect,
                                                                                'open': self.open,
                                                                                'favicon': self.favicon}}))
-            except:
+            except Exception:
                 print('Problem with websocket in page update, ignoring')
         return self
 
     async def update(self, websocket=None):
         try:
             websocket_dict = WebPage.sockets[self.page_id]
-        except:
+        except Exception:
             return self
         page_build = self.build_list()
         dict_to_send = {'type': 'page_update', 'data': page_build,
@@ -347,7 +347,7 @@ class JustpyBaseComponent(Tailwind):
         class_list = self.class_.split()
         try:
             class_list.remove(tw_class)
-        except:
+        except Exception:
             pass
         self.class_ = ' '.join(class_list)
 
@@ -362,25 +362,6 @@ class JustpyBaseComponent(Tailwind):
             self.remove_class('hidden')
         else:
             self.set_class('hidden')
-
-    async def update(self, socket=None):
-        component_dict = self.convert_object_to_dict()
-        if socket:
-            WebPage.loop.create_task(socket.send_json({'type': 'component_update', 'data': component_dict}))
-        else:
-            pages_to_update = list(self.pages.values())
-            for page in pages_to_update:
-                try:
-                    websocket_dict = WebPage.sockets[page.page_id]
-                except:
-                    continue
-                for websocket in list(websocket_dict.values()):
-                    try:
-                        WebPage.loop.create_task(
-                            websocket.send_json({'type': 'component_update', 'data': component_dict}))
-                    except:
-                        print('Problem with websocket in component update, ignoring')
-        return self
 
     def check_transition(self):
         if self.transition and (not self.id):
@@ -573,28 +554,28 @@ class HTMLBaseComponent(JustpyBaseComponent):
             if i[0:2] == 'v-':  # It is a directive
                 try:
                     d['directives'][i[2:]] = getattr(self, i.replace('-', '_'))
-                except:
+                except Exception:
                     pass
         for i in self.prop_list + self.attributes + HTMLBaseComponent.used_global_attributes:
             try:
                 d['attrs'][i] = getattr(self, i)
-            except:
+            except Exception:
                 pass
             if i in ['in', 'from']:  # Attributes that are also python reserved words
                 try:
                     d['attrs'][i] = getattr(self, '_' + i)
-                except:
+                except Exception:
                     pass
             if '-' in i:
                 s = i.replace('-', '_')  # kebab case to snake case
                 try:
                     d['attrs'][i] = getattr(self, s)
-                except:
+                except Exception:
                     pass
         # Name is a special case. Allow it to be defined for all
         try:
             d['attrs']['name'] = self.name
-        except:
+        except Exception:
             pass
         d['scoped_slots'] = {}
         for s in self.scoped_slots:
@@ -604,6 +585,25 @@ class HTMLBaseComponent(JustpyBaseComponent):
         if self.drag_options:
             d['drag_options'] = self.drag_options
         return d
+
+    async def update(self, socket=None):
+        component_dict = self.convert_object_to_dict()
+        if socket:
+            WebPage.loop.create_task(socket.send_json({'type': 'component_update', 'data': component_dict}))
+        else:
+            pages_to_update = list(self.pages.values())
+            for page in pages_to_update:
+                try:
+                    websocket_dict = WebPage.sockets[page.page_id]
+                except Exception:
+                    continue
+                for websocket in list(websocket_dict.values()):
+                    try:
+                        WebPage.loop.create_task(
+                            websocket.send_json({'type': 'component_update', 'data': component_dict}))
+                    except Exception:
+                        print('Problem with websocket in component update, ignoring')
+        return self
 
 
 class Div(HTMLBaseComponent):
@@ -662,7 +662,7 @@ class Div(HTMLBaseComponent):
     def remove_component(self, component):
         try:
             self.components.remove(component)
-        except:
+        except Exception:
             raise Exception('Component cannot be removed because it is not contained in element')
         return self
 
@@ -700,7 +700,7 @@ class Div(HTMLBaseComponent):
             return s
         try:
             s = f'{s}{self.text}{ws}'
-        except:
+        except Exception:
             pass
         for c in self.components:
             s = f'{s}{c.to_html(indent + indent_step, indent_step, format)}'
@@ -791,7 +791,7 @@ class Input(Div):
             if msg.input_type == 'number':
                 try:
                     msg.value = int(msg.value)
-                except:
+                except Exception:
                     msg.value = float(msg.value)
             if hasattr(self, 'model'):
                 # self.model[0].data[self.model[1]] = msg.value
@@ -857,7 +857,7 @@ class Input(Div):
             d['attrs']['checked'] = False
         try:
             d['attrs']['form'] = self.form.id
-        except:
+        except Exception:
             pass
 
         return d
@@ -909,11 +909,11 @@ class Label(Div):
         d = super().convert_object_to_dict()
         try:
             d['attrs']['for'] = self.for_component.id
-        except:
+        except Exception:
             pass
         try:
             d['attrs']['form'] = self.form.id
-        except:
+        except Exception:
             pass
         return d
 
@@ -1056,7 +1056,7 @@ class TabGroup(Div):
         if key == 'value':
             try:
                 self.previous_value = self.value
-            except:
+            except Exception:
                 pass
         self.__dict__[key] = value
 
@@ -1335,7 +1335,7 @@ def component_by_tag(tag, **kwargs):
         tag_class_name = tag[0].capitalize() + tag[1:]
         try:
             c = globals()[tag_class_name](**kwargs)
-        except:
+        except Exception:
             raise ValueError(f'Tag not defined: {tag}')
     return c
 
@@ -1597,7 +1597,7 @@ try:
     import aiofiles
 
     _has_aiofiles = True
-except:
+except Exception:
     _has_aiofiles = False
 
 if _has_aiofiles:
