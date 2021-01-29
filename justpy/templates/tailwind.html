@@ -1,67 +1,63 @@
-{% if not html %}
+<!DOCTYPE html>
+<html>
+<head>
+  {% include 'favicon.html' %}
 
-  <!DOCTYPE html>
-  <html>
-  <head>
-    {% include 'favicon.html' %}
-
-    {% if options.tailwind %}
-      {% if not options.no_internet %}
-        <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.4.6/dist/base.min.css">
-        <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.4.6/dist/components.min.css">
-        <link rel="stylesheet" href="https://unpkg.com/@tailwindcss/typography@^0.1.2/dist/typography.min.css">
-        <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.4.6/dist/utilities.min.css">
-      {% else %}
-        <link href="/templates/local/tailwind/base.css" rel="stylesheet">
-        <link href="/templates/local/tailwind/components.css" rel="stylesheet">
-        <link href="/templates/local/tailwind/typography.css" rel="stylesheet">
-        <link href="/templates/local/tailwind/utilities.css" rel="stylesheet">
-      {% endif %}
-      <style>
-        {% include 'css/form.css' %}
-      </style>
-    {% endif %}
-
-
+  {% if options.tailwind %}
     {% if not options.no_internet %}
-      <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.9.0/css/all.css"/>
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css"/>
+      <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.4.6/dist/base.min.css">
+      <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.4.6/dist/components.min.css">
+      <link rel="stylesheet" href="https://unpkg.com/@tailwindcss/typography@^0.1.2/dist/typography.min.css">
+      <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.4.6/dist/utilities.min.css">
     {% else %}
-      <link rel="stylesheet" href="/templates/local/fontawesome/css/all.min.css"/>
-      <link rel="stylesheet" href="/templates/local/animate.css"/>
+      <link href="/templates/local/tailwind/base.css" rel="stylesheet">
+      <link href="/templates/local/tailwind/components.css" rel="stylesheet">
+      <link href="/templates/local/tailwind/typography.css" rel="stylesheet">
+      <link href="/templates/local/tailwind/utilities.css" rel="stylesheet">
     {% endif %}
-
     <style>
-      {{ page_options.css }}
+      {% include 'css/form.css' %}
     </style>
-
-    {{ page_options.head_html | safe }}
-
-    {% if not options.no_internet %}
-      <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.11/vue.min.js"></script>
-    {% else %}
-      <script src="/templates/local/jquery.js"></script>
-      <script src="/templates/local/vue.js"></script>
-    {% endif %}
-
-    {% if options.highcharts %}
-      {% include 'highcharts.html' %}
-    {% endif %}
-  </head>
+  {% endif %}
 
 
-  <body style="{{ page_options.body_style }}" class="{{ page_options.body_classes }}">
-  {{ page_options.body_html | safe }}
-  <div id="components">
+  {% if not options.no_internet %}
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.9.0/css/all.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css"/>
+  {% else %}
+    <link rel="stylesheet" href="/templates/local/fontawesome/css/all.min.css"/>
+    <link rel="stylesheet" href="/templates/local/animate.css"/>
+  {% endif %}
 
-  </div>
+  <style>
+    {{ page_options.css }}
+  </style>
 
-  {% include 'main.html' %}
+  {{ page_options.head_html | safe }}
 
-  </body>
-  </html>
-  {% else %}{{ html | safe }}
-{% endif %}
+  {% if not options.no_internet %}
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.11/vue.min.js"></script>
+  {% else %}
+    <script src="/templates/local/jquery.js"></script>
+    <script src="/templates/local/vue.js"></script>
+  {% endif %}
+
+  {% if options.highcharts %}
+    {% include 'highcharts.html' %}
+  {% endif %}
+</head>
+
+
+<body style="{{ page_options.body_style }}" class="{{ page_options.body_classes }}">
+{{ page_options.body_html | safe }}
+<div id="components">
+
+</div>
+
+{% include 'main.html' %}
+
+</body>
+</html>
 
 

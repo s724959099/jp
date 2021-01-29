@@ -194,7 +194,7 @@ class Homepage(HTTPEndpoint):
             'justpy_dict': json.dumps(page_dict, default=str),
             'use_websockets': json.dumps(WebPage.use_websockets), 'options': template_options,
             'page_options': page_options,
-            'html': func_response_wp.html}
+        }
         # 轉成template resposne
         response = templates.TemplateResponse(func_response_wp.template_file, context)
 

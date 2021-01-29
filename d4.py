@@ -1,5 +1,6 @@
 import justpy as jp
 
+
 async def parse_demo(request):
     wp = jp.WebPage()
     c = jp.parse_html("""
@@ -10,9 +11,12 @@ async def parse_demo(request):
     </div>
     """, a=wp)
     p2 = c.name_dict['p2']
+
     def my_click(self, msg):
         self.text = 'I was clicked!'
+
     p2.on('click', my_click)
     return wp
+
 
 jp.justpy(parse_demo)
