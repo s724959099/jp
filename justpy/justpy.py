@@ -23,7 +23,7 @@ from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.responses import JSONResponse
 
 from .pandas import *
-from .routing import Route
+from .routing import Route, SetRoute
 
 current_module = sys.modules[__name__]
 current_dir = os.path.dirname(current_module.__file__)
