@@ -132,7 +132,7 @@ class HighCharts(HTMLBaseComponent):
         for c in args:
             c.add_component(self)
 
-    def react(self, data):
+    def react(self):
         pass
 
     def load_json(self, options_string):

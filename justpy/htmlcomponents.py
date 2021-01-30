@@ -210,7 +210,7 @@ class WebPage:
         object_list = []
         self.react()
         for i, obj in enumerate(self.components):
-            obj.react(self.data)
+            obj.react()
             d = obj.convert_object_to_dict()
             object_list.append(d)
         return object_list
@@ -379,7 +379,7 @@ class HTMLBaseComponent(Tailwind):
             s = f'{s}/>{ws}'
         return s
 
-    def react(self, data):
+    def react(self):
         return
 
     def convert_object_to_dict(self) -> dict:
@@ -444,24 +444,32 @@ class HTMLBaseComponent(Tailwind):
 
     def initialize(self, **kwargs):
         # for subclass __init__
-        # todo
+        self.init_id_and_instance()
+
+        # setattr
         for k, v in kwargs.items():
             self.__setattr__(k, v)
-        self.set_keyword_events(**kwargs)
+        # add to component
+        keys = kwargs.keys()
         for com in ['a', 'add_to']:
-            if com in kwargs.keys():
+            if com in keys:
                 kwargs[com].add_component(self)
+
+        self.set_keyword_events(**kwargs)
+
+    def init_id_and_instance(self):
+        cls = HTMLBaseComponent
+        if not self.id:
+            self.id = cls.next_id
+            cls.next_id += 1
+        cls.instances[self.id] = self
 
     def set_keyword_events(self, **kwargs):
         # for subclass __init__
-        # todo
+        keys = kwargs.keys()
         for e in self.allowed_events:
             for prefix in ['', 'on', 'on_']:
-                if prefix + e in kwargs.keys():
-                    cls = HTMLBaseComponent
-                    if not self.id:
-                        self.id = cls.next_id
-                        cls.next_id += 1
+                if prefix + e in keys:
                     fn = kwargs[prefix + e]
                     if isinstance(fn, str):
                         fn_string = f'def oneliner{self.id}(self, msg):\n {fn}'
@@ -478,26 +486,21 @@ class HTMLBaseComponent(Tailwind):
                 self.needs_deletion = False
 
     def on(self, event_type, func, debounce=None, throttle=None, immediate=False):
-        # todo
-        if event_type in self.allowed_events:
-            cls = HTMLBaseComponent
-            if not self.id:
-                self.id = cls.next_id
-                cls.next_id += 1
-            cls.instances[self.id] = self
-            self.needs_deletion = True
-            if inspect.ismethod(func):
-                setattr(self, 'on_' + event_type, func)
-            else:
-                setattr(self, 'on_' + event_type, MethodType(func, self))
-            if event_type not in self.events:
-                self.events.append(event_type)
-            if debounce:
-                self.event_modifiers[event_type].debounce = {'value': debounce, 'timeout': None, 'immediate': immediate}
-            elif throttle:
-                self.event_modifiers[event_type].throttle = {'value': throttle, 'timeout': None}
-        else:
+        if event_type not in self.allowed_events:
             raise Exception(f'No event of type {event_type} supported')
+
+        # todo
+        self.needs_deletion = True
+        if inspect.ismethod(func):
+            setattr(self, 'on_' + event_type, func)
+        else:
+            setattr(self, 'on_' + event_type, MethodType(func, self))
+        if event_type not in self.events:
+            self.events.append(event_type)
+        if debounce:
+            self.event_modifiers[event_type].debounce = {'value': debounce, 'timeout': None, 'immediate': immediate}
+        elif throttle:
+            self.event_modifiers[event_type].throttle = {'value': throttle, 'timeout': None}
 
     def remove_event(self, event_type):
         if event_type in self.events:
@@ -688,7 +691,7 @@ class Div(HTMLBaseComponent):
     def build_list(self):
         object_list = []
         for i, obj in enumerate(self.components):
-            obj.react(self.data)
+            obj.react()
             d = obj.convert_object_to_dict()
             object_list.append(d)
         return object_list

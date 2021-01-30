@@ -187,7 +187,6 @@ class Homepage(HTTPEndpoint):
         page_options:
         html: 如果html 有，就改使用html tag string
         """
-        # todo check html or oop tag
         context = {
             'request': request,
             'page_id': func_response_wp.page_id,
