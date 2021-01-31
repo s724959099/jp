@@ -1,5 +1,12 @@
 import justpy as jp
 import typing
+import os
+
+
+def read_html(file_name):
+    join_path = os.path.join(os.path.dirname(__file__), file_name)
+    with open(join_path, 'r') as f:
+        return f.read()
 
 
 class MTh(jp.Div):
@@ -10,6 +17,14 @@ class MTh(jp.Div):
         kwargs['class_'] = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
         kwargs['scope'] = 'col'
         super().__init__(**kwargs)
+
+
+class Pagination(jp.Div):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        html = read_html('pagination.html')
+        c = jp.parse_html(html)
+        self.add_component(c)
 
 
 class MRow(jp.Tr):
@@ -28,25 +43,8 @@ class MTable(jp.Div):
         super().__init__(**kwargs)
         self.data = data
 
-        c = jp.parse_html(
-            """
-              <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                  <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                    <table class="min-w-full divide-y divide-gray-200">
-                      <thead class="bg-gray-50">
-                        <tr name="tr">
-                        </tr>
-                      </thead>
-                      <tbody class="bg-white divide-y divide-gray-200" name="tbody">
-                      
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            """
-        )
+        html = read_html('table.html')
+        c = jp.parse_html(html)
         self.c = c
         tr = c.name_dict['tr']
         [
