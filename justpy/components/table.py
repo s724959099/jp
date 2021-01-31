@@ -24,7 +24,18 @@ class Pagination(jp.Div):
         super().__init__(**kwargs)
         html = read_html('pagination.html')
         c = jp.parse_html(html)
+        left = c.name_dict['left']
+        left.on('click', self.left_click)
+
+        right = c.name_dict['right']
+        right.on('click', self.right_click)
         self.add_component(c)
+
+    def left_click(self, msg):
+        print()
+
+    def right_click(self, msg):
+        print()
 
 
 class MRow(jp.Tr):
