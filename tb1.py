@@ -5,7 +5,10 @@ import uvicorn
 @jp.SetRoute('/')
 def demo():
     wp = jp.WebPage()
-    table = jp.MTable()
+    table = jp.MTable(
+        columns=['Song', 'Dance'],
+        data=[(1, 2), ('yo', 'ok')]
+    )
     wp.add(table)
     return wp
 

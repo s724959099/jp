@@ -1,4 +1,5 @@
 import justpy as jp
+import typing
 
 
 class MTh(jp.Div):
@@ -11,11 +12,21 @@ class MTh(jp.Div):
         super().__init__(**kwargs)
 
 
+class MRow(jp.Tr):
+
+    def __init__(self, data: typing.List = None, **kwargs):
+        super().__init__(**kwargs)
+        [self.add_component(
+            jp.Td(class_="px-6 py-4 whitespace-nowrap", text=text)
+        ) for text in data]
+
+
 class MTable(jp.Div):
 
-    def __init__(self, **kwargs):
+    def __init__(self, columns: typing.List = None, data: typing.List = None, **kwargs):
         self.class_ = 'flex flex-col'
         super().__init__(**kwargs)
+        self.data = data
 
         c = jp.parse_html(
             """
@@ -27,7 +38,7 @@ class MTable(jp.Div):
                         <tr name="tr">
                         </tr>
                       </thead>
-                      <tbody class="bg-white divide-y divide-gray-200" nmae="tbody">
+                      <tbody class="bg-white divide-y divide-gray-200" name="tbody">
                       
                       </tbody>
                     </table>
@@ -38,44 +49,17 @@ class MTable(jp.Div):
         )
         self.c = c
         tr = c.name_dict['tr']
-        tr.add(MTh(text='Name'))
-        tr.add(MTh(text='Title'))
-        tr.add(MTh(text='Status'))
-        tr.add(MTh(text='Role'))
+        [
+            tr.add_component(MTh(text=col))
+            for col in columns
+        ]
+        self.tr = tr
+        tbody = c.name_dict['tbody']
+        self.tbody = tbody
         self.add_component(c)
 
     def react(self):
-        """
-        <tr>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <div class="flex items-center">
-              <div class="flex-shrink-0 h-10 w-10">
-                <img class="h-10 w-10 rounded-full" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=facearea&amp;facepad=4&amp;w=256&amp;h=256&amp;q=60" alt="">
-              </div>
-              <div class="ml-4">
-                <div class="text-sm font-medium text-gray-900">
-                  Jane Cooper
-                </div>
-                <div class="text-sm text-gray-500">
-                  jane.cooper@example.com
-                </div>
-              </div>
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm text-gray-900">Regional Paradigm Technician</div>
-            <div class="text-sm text-gray-500">Optimization</div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-              Active
-            </span>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-            Admin
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-            <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-          </td>
-        </tr>
-        """
+        tbody = self.tbody
+        tbody.delete_components()
+        for row in self.data:
+            tbody.add_component(MRow(data=row))
