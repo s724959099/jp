@@ -24,6 +24,7 @@ from starlette.responses import JSONResponse
 
 from .pandas import *
 from .routing import Route, SetRoute
+from .chartcomponents import HighStock
 
 current_module = sys.modules[__name__]
 current_dir = os.path.dirname(current_module.__file__)
