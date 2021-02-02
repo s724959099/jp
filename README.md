@@ -60,3 +60,11 @@ vue_type: (...)
 
 
 https://tailwindcomponents.com/component/table-1
+
+
+```javascript
+
+let utterance = new window.SpeechSynthesisUtterance('Hello World');
+utterance.lang = 'en-US';
+window.speechSynthesis.speak(utterance)
+```
