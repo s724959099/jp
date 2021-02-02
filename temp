@@ -1,2 +1,20 @@
-https://www.youtube.com/api/timedtext?
-v=II7UCUbxOuscaps=asrexp=xfttxorp=truexoaf=5hl=zh-TWip=0.0.0.0ipbits=0expire=1612284657sparams=ip%2Cipbits%2Cexpire%2Cv%2Casr_langs%2Ccaps%2Cexp%2Cxorp%2Cxoafsignature=8846618DF9ABB9161AC679961E1ACD3335CD1B83.51037600AF03ED23F84B62CFABB3E813127E4C5Bkey=yt8lang=en-CAtlang=zh-Hant
+
+
+v: aoQ6S1a32j8
+asr_langs: de,en,es,fr,it,ja,ko,nl,pt,ru
+caps: asr
+exp: xftt
+xorp: true
+xoaf: 5
+hl: zh-TW
+ip: 0.0.0.0
+ipbits: 0
+expire: 1612298957
+sparams: ip,ipbits,expire,v,asr_langs,caps,exp,xorp,xoaf
+signature: B9146735C9663BB7313E386C641E53A95A0B7E0A.5A8EF644BD4B4805D20163427BB5323805B5C8F0
+key: yt8
+kind: asr
+lang: en
+xorb: 2
+xobt: 3
+xovt: 3
