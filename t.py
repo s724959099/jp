@@ -22,11 +22,16 @@ class SubTitleCralwer:
         self.en_url = re.sub(r'\\u0026', '&', api)
         self.zh_url = self.en_url + '&tlang=zh-Hant'
 
+    def get_list(self, content):
+        content = re.sub(r'&amp;#39;', '\'', content)
+        return re.findall(r'<.+?">(.+?)</text', content)
+
     def get_subtitle(self):
         r = requests.get(self.en_url)
-        content = r.text
-        re.findall(r'<.+?>(.+?)</text',content)
-        print()
+        self.en_subtitles = self.get_list(r.text)
+
+        r = requests.get(self.zh_url)
+        self.zh_subtitles = self.get_list(r.text)
 
 
 if __name__ == '__main__':
