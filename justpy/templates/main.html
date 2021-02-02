@@ -134,8 +134,7 @@
           comp_replace(msg.data, app1.justpyComponents);
           break;
         case 'run_javascript':
-          // let js_result = eval(msg.data);
-          let js_result;
+          let js_result = eval(msg.data);
 
         function eval_success() {
           e = {
