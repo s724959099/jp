@@ -1,4 +1,4 @@
-import justpy as jp
+import jp
 
 
 class TodoList(jp.Ol):

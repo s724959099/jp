@@ -1,4 +1,4 @@
-import justpy as jp
+import jp
 import pandas as pd
 import datetime
 

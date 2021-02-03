@@ -1,7 +1,7 @@
 # Simplified blackjack game using https://deckofcardsapi.com/ API
 # Not all rules are implemented
 
-import justpy as jp
+import jp
 import asyncio
 
 card_size = 0.5

@@ -1,4 +1,4 @@
-import justpy as jp
+import jp
 
 
 async def parse_demo(request):

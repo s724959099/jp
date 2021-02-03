@@ -1,4 +1,4 @@
-import justpy as jp
+import jp
 
 
 def click_out(self, msg):

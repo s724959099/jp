@@ -1,4 +1,4 @@
-import justpy as jp
+import jp
 
 
 def my_click(self, msg):

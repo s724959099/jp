@@ -1,4 +1,4 @@
-import justpy as jp
+import jp
 import sqlite3
 import pandas as pd
 
