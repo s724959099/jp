@@ -42,6 +42,7 @@ class WebPage:
     allowed_events = ['click', 'visibilitychange', 'page_ready', 'result_ready']
 
     def __init__(self, **kwargs):
+        self.run_javascripts = []
         self.page_id = WebPage.next_page_id
         WebPage.next_page_id += 1
         self.cache = None  # Set this attribute if you want to use the cache.
@@ -84,6 +85,10 @@ class WebPage:
         else:
             self.components.insert(position, child)
         return self
+
+    def add_components(self, children: list):
+        for child in children:
+            self.add_component(child)
 
     async def on_disconnect(self):
         if self.delete_flag:
@@ -138,6 +143,9 @@ class WebPage:
         try:
             websocket_dict = WebPage.sockets[self.page_id]
         except Exception:
+            self.run_javascripts.append(
+                (javascript_string, request_id, send)
+            )
             return self
         dict_to_send = {'type': 'run_javascript', 'data': javascript_string, 'request_id': request_id, 'send': send}
         await asyncio.gather(*[websocket.send_json(dict_to_send) for websocket in list(websocket_dict.values())],
@@ -613,6 +621,10 @@ class Div(HTMLBaseComponent):
         else:
             self.components.insert(position, child)
         return self
+
+    def add_components(self, children: list):
+        for child in children:
+            self.add_component(child)
 
     def delete_components(self):
         for c in self.components:

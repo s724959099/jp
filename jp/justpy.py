@@ -264,6 +264,13 @@ class JustpyEvents(WebSocketEndpoint):
                 WebPage.sockets[page_key][websocket.id] = websocket
             else:
                 WebPage.sockets[page_key] = {websocket.id: websocket}
+
+            wp = WebPage.instances.get(page_key)
+            if wp and wp.run_javascripts:
+                while len(wp.run_javascripts):
+                    (javascript_string, request_id, send) = wp.run_javascripts.pop(0)
+                    await wp.run_javascript(javascript_string=javascript_string, request_id=request_id, send=send)
+
             return
         if msg_type == 'event' or msg_type == 'page_event':
             # Message sent when an event occurs in the browser
