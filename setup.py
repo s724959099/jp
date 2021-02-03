@@ -8,7 +8,7 @@ setuptools.setup(
     author_email="meatball0520@gmail.com",
     description="Fork from justpy",
     url="https://github.com/s724959099/jp",
-    packages=['jp'],
+    packages=setuptools.find_packages(),
     include_package_data=True,
     zip_safe=False,
     install_requires=[
