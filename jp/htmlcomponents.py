@@ -1,15 +1,12 @@
 from types import MethodType
 from addict import Dict
-from html.parser import HTMLParser
-from html.entities import name2codepoint
-from html import unescape
 import asyncio
 from .tailwind import Tailwind
 import logging
-import httpx
 import inspect
 import re
 from .util import try_save
+import typing
 
 # todo
 tagfind_tolerant = re.compile(r'([a-zA-Z][^\t\n\r\f />\x00]*)(?:\s|/(?!>))*')
@@ -84,6 +81,7 @@ class WebPage:
             self.components.append(child)
         else:
             self.components.insert(position, child)
+        child.add_page(self)
         return self
 
     def add_components(self, children: list):
@@ -287,6 +285,7 @@ class HTMLBaseComponent(Tailwind):
 
     def __init__(self, **kwargs):
         super().__init__()
+        self.components = []
         # 每new 一個 self.id 就會增加一個 用在on evnet 等等功能上
         cls = HTMLBaseComponent
         temp = kwargs.get('temp', cls.temp_flag)
@@ -559,6 +558,8 @@ class HTMLBaseComponent(Tailwind):
 
     def add_page(self, wp: WebPage):
         self.pages[wp.page_id] = wp
+        for child in self.components:
+            child.add_page(wp)
 
     def add_page_to_pages(self, wp: WebPage):
         self.pages[wp.page_id] = wp
@@ -613,9 +614,10 @@ class Div(HTMLBaseComponent):
     def __getitem__(self, index):
         return self.components[index]
 
-    def add_component(self, child, position=None, slot=None):
+    def add_component(self, child: typing.Any, position=None, slot=None):
         if slot:
             child.slot = slot
+        child.pages = self.pages
         if position is None:
             self.components.append(child)
         else:

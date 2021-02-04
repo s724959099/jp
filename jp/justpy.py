@@ -19,7 +19,8 @@ from starlette.endpoints import WebSocketEndpoint
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.responses import JSONResponse
-
+from html.parser import HTMLParser
+from html import unescape
 from .pandas import *
 from .routing import Route
 
