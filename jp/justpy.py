@@ -1,8 +1,6 @@
 # todo remove startlette
 import json
-import logging
 from contextlib import asynccontextmanager
-from html.parser import HTMLParser
 from ssl import PROTOCOL_SSLv23
 
 import fnmatch
@@ -23,8 +21,7 @@ from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.responses import JSONResponse
 
 from .pandas import *
-from .routing import Route, SetRoute
-from .chartcomponents import HighStock
+from .routing import Route
 
 current_module = sys.modules[__name__]
 current_dir = os.path.dirname(current_module.__file__)
