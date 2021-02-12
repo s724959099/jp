@@ -444,81 +444,24 @@ class BasicHTMLParser(HTMLParser):
     void_elements = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'menuitem', 'meta',
                      'param', 'source', 'track', 'wbr']
 
-    def __init__(self, context, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__()
+        context = inspect.stack()[1][0]
         self.lasttag = None
         self.context = context
-        self.level = -1
-        self.parse_id = 0
         self.start_tag = True
         self.components = []
         self.name_dict = Dict()  # After parsing holds a dict with named components
-        self.dict_attribute = kwargs.get('dict_attribute', 'name')  # Use another attribute than name
+        # use name to get
+        self.name_dict_attribute = 'name'
         self.root = Div(name='root')
         self.containers = []
         self.containers.append(self.root)
-        self.endtag_required = True
 
-    def parse_starttag(self, i):
-        # This is the original library method with two changes to stop tags and attributes being lower case
-        # This is required for the SVG tags which can be camelcase
-        # https://github.com/python/cpython/blob/3.7/Lib/html/parser.py
-        self.__starttag_text = None
-        endpos = self.check_for_whole_start_tag(i)
-        if endpos < 0:
-            return endpos
-        rawdata = self.rawdata
-        self.__starttag_text = rawdata[i:endpos]
-
-        # Now parse the data between i+1 and j into a tag and attrs
-        attrs = []
-        match = tagfind_tolerant.match(rawdata, i + 1)
-        assert match, 'unexpected call to parse_starttag()'
-        k = match.end()
-        # self.lasttag = tag = match.group(1).lower() was the original
-        self.lasttag = tag = match.group(1)
-        while k < endpos:
-            m = attrfind_tolerant.match(rawdata, k)
-            if not m:
-                break
-            attrname, rest, attrvalue = m.group(1, 2, 3)
-            if not rest:
-                attrvalue = None
-            elif attrvalue[:1] == '\'' == attrvalue[-1:] or \
-                    attrvalue[:1] == '"' == attrvalue[-1:]:
-                attrvalue = attrvalue[1:-1]
-            if attrvalue:
-                attrvalue = unescape(attrvalue)
-            # attrs.append((attrname.lower(), attrvalue)) was the original
-            attrs.append((attrname, attrvalue))
-            k = m.end()
-
-        end = rawdata[k:endpos].strip()
-        if end not in (">", "/>"):
-            lineno, offset = self.getpos()
-            if "\n" in self.__starttag_text:
-                lineno = lineno + self.__starttag_text.count("\n")
-                offset = len(self.__starttag_text) \
-                         - self.__starttag_text.rfind("\n")
-            else:
-                offset = offset + len(self.__starttag_text)
-            self.handle_data(rawdata[i:endpos])
-            return endpos
-        if end.endswith('/>'):
-            # XHTML-style empty tag: <span attr="value" />
-            self.handle_startendtag(tag, attrs)
-        else:
-            self.handle_starttag(tag, attrs)
-            if tag in self.CDATA_CONTENT_ELEMENTS:
-                self.set_cdata_mode(tag)
-        return endpos
-
-    def handle_startendtag(self, tag, attrs):
-        self.handle_starttag(tag, attrs)
-        if self.endtag_required:
-            self.handle_endtag(tag)
-        else:
-            self.endtag_required = True
+    def feed(self, data):
+        if isinstance(data, str):
+            data = data.strip()
+        return super(BasicHTMLParser, self).feed(data)
 
     def val_transfer(self, val):
         if val in self.context.f_locals:
@@ -531,10 +474,7 @@ class BasicHTMLParser(HTMLParser):
         return ret
 
     def handle_starttag(self, tag, attrs):
-        self.level += 1
-        self.parse_id += 1
         c = component_by_tag(tag, self.context)
-        c.parse_id = self.parse_id
         # set id
         if not c.id:
             cls = HTMLBaseComponent
@@ -570,38 +510,33 @@ class BasicHTMLParser(HTMLParser):
 
             setattr(c, key, val)
             # Add to name to dict of named components. Each entry can be a list of components to allow multiple components with same name
-            if attr[0] == self.dict_attribute:
-                if attr[1] not in self.name_dict:
-                    self.name_dict[attr[1]] = c
+            if key == self.name_dict_attribute:
+                if val not in self.name_dict:
+                    self.name_dict[val] = c
                 else:
-                    if not isinstance(self.name_dict[attr[1]], (list,)):
-                        self.name_dict[attr[1]] = [self.name_dict[attr[1]]]
-                    self.name_dict[attr[1]].append(c)
+                    # 多個相同name 改成list
+                    if not isinstance(self.name_dict[val], list):
+                        self.name_dict[val] = [self.name_dict[val]]
+                    self.name_dict[val].append(c)
 
         self.containers[-1].add_component(c)
         self.containers.append(c)
 
-        if tag in BasicHTMLParser.void_elements:
-            self.handle_endtag(tag)
-            self.endtag_required = False
-        else:
-            self.endtag_required = True
-
     def handle_endtag(self, tag):
-        c = self.containers.pop()
-        del c.parse_id
-        self.level -= 1
+        print('handle_endtag', tag)
+        # todo containers 作用？
+        self.containers.pop()
 
     def handle_data(self, data):
+        print('handle_data', data)
         data = data.strip()
         if data:
             self.containers[-1].text = data
-            data = data.replace("'", "\\'")
         return
 
 
-def justpy_parser(html_string, context, **kwargs):
-    parser = BasicHTMLParser(context, **kwargs)
+def justpy_parser(html_string, **kwargs):
+    parser = BasicHTMLParser(**kwargs)
     parser.feed(html_string)
     if len(parser.root.components) == 1:
         parser_result = parser.root.components[0]
@@ -613,4 +548,4 @@ def justpy_parser(html_string, context, **kwargs):
 
 
 def parse_html(html_string, **kwargs):
-    return justpy_parser(html_string, inspect.stack()[1][0], **kwargs)
+    return justpy_parser(html_string, **kwargs)

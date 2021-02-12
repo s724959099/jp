@@ -137,6 +137,7 @@ async def demo():
     c = jp.parse_html("""
     <div class="bg-red-200 h-screen">
         <div class="flex flex-col items-center" name="item" :a=d text="yooo">
+        ooooooo
         </div>
       </div>
     """)
