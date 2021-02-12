@@ -539,9 +539,9 @@ class BasicHTMLParser(HTMLParser):
             match_text = match_text.strip()
             if match_text.startswith('self.'):
                 match_text = match_text.lstrip('self.')
-                if not hasattr(self.target,match_text):
+                if not hasattr(self.target, match_text):
                     raise ValueError(f'not found {match_text}')
-                attr = getattr(self.target,match_text)
+                attr = getattr(self.target, match_text)
                 if callable(attr):
                     self.containers[-1].text = attr()
                 else:
@@ -563,6 +563,8 @@ def justpy_parser(html_string, **kwargs):
     target = kwargs.get('target')
     if target:
         target.name_dict = parser.name_dict
+    for c in parser_result.components:
+        c.name_dict = parser.name_dict
     parser_result.initialize(**kwargs)
     return parser_result
 
