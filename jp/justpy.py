@@ -446,7 +446,8 @@ class BasicHTMLParser(HTMLParser):
 
     def __init__(self, **kwargs):
         super().__init__()
-        context = inspect.stack()[1][0]
+        context = inspect.stack()[2][0]
+        self.wp = WebPage()
         self.lasttag = None
         self.context = context
         self.start_tag = True
@@ -474,7 +475,7 @@ class BasicHTMLParser(HTMLParser):
         return ret
 
     def handle_starttag(self, tag, attrs):
-        c = component_by_tag(tag, self.context)
+        c = component_by_tag(tag, self.context, page=self.wp)
         # set id
         if not c.id:
             cls = HTMLBaseComponent
@@ -509,7 +510,7 @@ class BasicHTMLParser(HTMLParser):
                 continue
 
             setattr(c, key, val)
-            # Add to name to dict of named components. Each entry can be a list of components to allow multiple components with same name
+            # 如果 有self.name_dict_attribute 則加入到name_dict
             if key == self.name_dict_attribute:
                 if val not in self.name_dict:
                     self.name_dict[val] = c
@@ -523,12 +524,10 @@ class BasicHTMLParser(HTMLParser):
         self.containers.append(c)
 
     def handle_endtag(self, tag):
-        print('handle_endtag', tag)
         # todo containers 作用？
         self.containers.pop()
 
     def handle_data(self, data):
-        print('handle_data', data)
         data = data.strip()
         if data:
             self.containers[-1].text = data
@@ -545,6 +544,21 @@ def justpy_parser(html_string, **kwargs):
     parser_result.name_dict = parser.name_dict
     parser_result.initialize(**kwargs)
     return parser_result
+
+
+def justpy_parser_to_wp(html_string, **kwargs):
+    parser = BasicHTMLParser(**kwargs)
+    parser.feed(html_string)
+    if len(parser.root.components) == 1:
+        parser_result = parser.root.components[0]
+    else:
+        parser_result = parser.root
+    parser_result.name_dict = parser.name_dict
+    parser_result.initialize(**kwargs)
+    wp = parser.wp
+    wp.add_component(parser_result)
+    wp.name_dict = parser.name_dict
+    return wp
 
 
 def parse_html(html_string, **kwargs):
