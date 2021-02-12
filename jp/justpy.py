@@ -502,6 +502,8 @@ class BasicHTMLParser(HTMLParser):
             val_transfer = self.val_transfer(val)
             # on eventZ
             if key.startswith('@'):
+                if hasattr(self.target, val_transfer):
+                    val_transfer = getattr(self.target, val_transfer)
                 c.on(key[1:], val_transfer)
                 continue
             if key.startswith(':'):
