@@ -23,6 +23,7 @@ from html.parser import HTMLParser
 from html import unescape
 from .pandas import *
 from .routing import Route
+from .htmlcomponents import HTMLBaseComponent
 
 current_module = sys.modules[__name__]
 current_dir = os.path.dirname(current_module.__file__)
@@ -457,13 +458,6 @@ class BasicHTMLParser(HTMLParser):
         self.containers = []
         self.containers.append(self.root)
         self.endtag_required = True
-        self.create_commands = kwargs.get('create_commands', True)  # If True, create the justpy command list
-        self.command_prefix = kwargs.get('command_prefix', 'jp.')  # Prefix for commands generated, defaults to 'jp.'
-        if self.create_commands:
-            # List of command strings (justpy python code to generate the element)
-            self.commands = [f"root = {self.command_prefix}Div()"]
-        else:
-            self.commands = ''
 
     def parse_starttag(self, i):
         # This is the original library method with two changes to stop tags and attributes being lower case
@@ -526,43 +520,55 @@ class BasicHTMLParser(HTMLParser):
         else:
             self.endtag_required = True
 
+    def val_transfer(self, val):
+        if val in self.context.f_locals:
+            ret = self.context.f_locals[val]
+        elif val in self.context.f_globals:
+            ret = self.context.f_globals[val]
+        else:
+            ret = val
+
+        return ret
+
     def handle_starttag(self, tag, attrs):
         self.level += 1
         self.parse_id += 1
-        c = component_by_tag(tag)
+        c = component_by_tag(tag, self.context)
         c.parse_id = self.parse_id
-        command_string = f''
+        # set id
+        if not c.id:
+            cls = HTMLBaseComponent
+            c.id = cls.next_id
+            cls.next_id += 1
+
         if c is None:
             print(tag, 'No such tag, Div being used instead *****************************************')
             c = Div()
         for attr in attrs:
             attr = list(attr)
-            attr[0] = attr[0].replace('-', '_')
-            if attr[0][0] == '@':
-                if attr[1] in self.context.f_locals:
-                    c.on(attr[0][1:], self.context.f_locals[attr[1]])
-                elif attr[1] in self.context.f_globals:
-                    c.on(attr[0][1:], self.context.f_globals[attr[1]])
-                else:
-                    cls = JustpyBaseComponent
-                    if not c.id:
-                        c.id = cls.next_id
-                        cls.next_id += 1
-                    fn_string = f'def oneliner{c.id}(self, msg):\n {attr[1]}'  # remove first and last charcters which are quotes
-                    exec(fn_string)
-                    c.on(attr[0][1:], locals()[f'oneliner{c.id}'])
+            key, val = attr
+            if val is None:
+                val = True
+            key = key.replace('_', '-')
+            # class attr
+            if key == 'class':
+                key = 'class_'
+            # Handle attributes that are also python reserved words
+            if key in ['in', 'from']:
+                key = '_' + key
+
+            val_transfer = self.val_transfer(val)
+            # on eventZ
+            if key.startswith('@'):
+                c.on(key[1:], val_transfer)
                 continue
-            if attr[0][0] == ':':
-                attr[0] = attr[0][1:]
-                attr[1] = eval(attr[1])
-            if attr[0] == 'id':
-                c.id = attr[1]
+            if key.startswith(':'):
+                key = key[1:]
+            if key == 'id':
+                c.id = val
                 continue
-            if attr[1] is None:
-                setattr(c, attr[0], True)
-                attr[1] = True
-            else:
-                setattr(c, attr[0], attr[1])
+
+            setattr(c, key, val)
             # Add to name to dict of named components. Each entry can be a list of components to allow multiple components with same name
             if attr[0] == self.dict_attribute:
                 if attr[1] not in self.name_dict:
@@ -571,25 +577,6 @@ class BasicHTMLParser(HTMLParser):
                     if not isinstance(self.name_dict[attr[1]], (list,)):
                         self.name_dict[attr[1]] = [self.name_dict[attr[1]]]
                     self.name_dict[attr[1]].append(c)
-            if attr[0] == 'class':
-                c.class_ = attr[1]
-                attr[0] = 'class_'
-            # Handle attributes that are also python reserved words
-            if attr[0] in ['in', 'from']:
-                attr[0] = '_' + attr[0]
-
-            if self.create_commands:
-                if isinstance(attr[1], str):
-                    command_string = f"{command_string}{attr[0]}='{attr[1]}', "
-                else:
-                    command_string = f'{command_string}{attr[0]}={attr[1]}, '
-
-        if self.create_commands:
-            if id(self.containers[-1]) == id(self.root):
-                command_string = f'c{c.parse_id} = {self.command_prefix}{c.class_name}({command_string}a=root)'
-            else:
-                command_string = f'c{c.parse_id} = {self.command_prefix}{c.class_name}({command_string}a=c{self.containers[-1].parse_id})'
-            self.commands.append(command_string)
 
         self.containers[-1].add_component(c)
         self.containers.append(c)
@@ -610,31 +597,10 @@ class BasicHTMLParser(HTMLParser):
         if data:
             self.containers[-1].text = data
             data = data.replace("'", "\\'")
-            if self.create_commands:
-                self.commands[-1] = f"{self.commands[-1][:-1]}, text='{data}')"
         return
-
-    def handle_comment(self, data):
-        pass
-
-    def handle_entityref(self, name):
-        c = chr(name2codepoint[name])
-
-    def handle_charref(self, name):
-        if name.startswith('x'):
-            c = chr(int(name[1:], 16))
-        else:
-            c = chr(int(name))
-
-    def handle_decl(self, data):
-        pass
 
 
 def justpy_parser(html_string, context, **kwargs):
-    '''
-    Returns root component of the parser with the name_dict as attribute.
-    If root component has only one child, returns the child
-    '''
     parser = BasicHTMLParser(context, **kwargs)
     parser.feed(html_string)
     if len(parser.root.components) == 1:
@@ -642,7 +608,6 @@ def justpy_parser(html_string, context, **kwargs):
     else:
         parser_result = parser.root
     parser_result.name_dict = parser.name_dict
-    parser_result.commands = parser.commands
     parser_result.initialize(**kwargs)
     return parser_result
 

@@ -1410,20 +1410,14 @@ class QHello(Hello):
         self.class_ = 'text-h3 text-primary q-ma-md'
 
 
-def component_by_tag(tag, **kwargs):
-    # tag = tag.lower()
-    if tag[0:2] == 'q-':
-        if tag in _tag_class_dict:
-            c = _tag_class_dict[tag](**kwargs)
-        else:
-            raise ValueError(f'Tag not defined: {tag}')
+def component_by_tag(tag, context=None, **kwargs):
+    tag_class_name = tag.capitalize()
+    global_dict = globals()
+    for dct in [global_dict, context.f_locals, context.f_globals]:
+        if tag_class_name in dct:
+            return dct[tag_class_name](**kwargs)
     else:
-        tag_class_name = tag[0].capitalize() + tag[1:]
-        try:
-            c = globals()[tag_class_name](**kwargs)
-        except Exception:
-            raise ValueError(f'Tag not defined: {tag}')
-    return c
+        raise ValueError(f'Tag not defined: {tag}')
 
 
 class AutoTable(Table):
@@ -1457,9 +1451,6 @@ class AutoTable(Table):
                     tr = Tr(class_=self.tr_odd_classes, a=tbody)
                 for item in row:
                     Td(text=item, class_=self.td_classes, a=tr)
-
-
-get_tag = component_by_tag
 
 
 def get_websocket(event_data):
