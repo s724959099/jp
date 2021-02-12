@@ -560,6 +560,9 @@ def justpy_parser(html_string, **kwargs):
     else:
         parser_result = parser.root
     parser_result.name_dict = parser.name_dict
+    target = kwargs.get('target')
+    if target:
+        target.name_dict = parser.name_dict
     parser_result.initialize(**kwargs)
     return parser_result
 

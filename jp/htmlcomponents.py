@@ -286,6 +286,7 @@ class HTMLBaseComponent(Tailwind):
 
     def __init__(self, **kwargs):
         super().__init__()
+        self.name_dict = Dict()
         self.components = []
         # 每new 一個 self.id 就會增加一個 用在on evnet 等等功能上
         cls = HTMLBaseComponent
