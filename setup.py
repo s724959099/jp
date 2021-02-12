@@ -3,7 +3,7 @@ import setuptools
 setuptools.setup(
     name="jp",
     python_requires=">=3.6",
-    version="0.0.1",
+    version="0.0.2",
     author="Meatball0520",
     author_email="meatball0520@gmail.com",
     description="Fork from justpy",
