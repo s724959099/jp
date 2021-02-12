@@ -20,8 +20,8 @@ from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.responses import JSONResponse
 from html.parser import HTMLParser
-from html import unescape
 from .pandas import *
+import re
 from .routing import Route
 from .htmlcomponents import HTMLBaseComponent
 
@@ -444,8 +444,9 @@ class BasicHTMLParser(HTMLParser):
     void_elements = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'menuitem', 'meta',
                      'param', 'source', 'track', 'wbr']
 
-    def __init__(self, **kwargs):
+    def __init__(self, target=None):
         super().__init__()
+        self.target = target
         context = inspect.stack()[2][0]
         self.wp = WebPage()
         self.lasttag = None
@@ -528,8 +529,23 @@ class BasicHTMLParser(HTMLParser):
         self.containers.pop()
 
     def handle_data(self, data):
+        pattern = re.compile(r'{{(.+?)}}')
         data = data.strip()
-        if data:
+        match = pattern.match(data)
+        if match:
+            match_text = match.groups()[0]
+            match_text = match_text.strip()
+            if match_text.startswith('self.'):
+                match_text = match_text.lstrip('self.')
+                if not hasattr(self.target,match_text):
+                    raise ValueError(f'not found {match_text}')
+                attr = getattr(self.target,match_text)
+                if callable(attr):
+                    self.containers[-1].text = attr()
+                else:
+                    self.containers[-1].text = attr
+
+        elif data:
             self.containers[-1].text = data
         return
 

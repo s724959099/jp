@@ -259,6 +259,7 @@ class HTMLBaseComponent(Tailwind):
     Base Component for all HTML components
     """
     next_id = 1
+    html_render = ''
     # for singletone id: instance
     instances = {}
     temp_flag = True
@@ -299,6 +300,7 @@ class HTMLBaseComponent(Tailwind):
         self.events = []
         self.event_modifiers = Dict()
         self.transition = None
+        self.page = None
         self.pages = {}  # Dictionary of pages the component is on. Not managed by framework.
         # self.model = []
 
@@ -327,6 +329,12 @@ class HTMLBaseComponent(Tailwind):
         self.prop_list = []  # For components from libraries like quasar
 
         self.initialize(**kwargs)
+
+    def __new__(cls, *args, **kwargs):
+        from .justpy import justpy_parser
+        if cls.html_render:
+            return justpy_parser(cls.html_render, target=cls)
+        return super(HTMLBaseComponent, cls).__new__(cls)
 
     def __len__(self):
         if hasattr(self, 'components'):
@@ -557,6 +565,7 @@ class HTMLBaseComponent(Tailwind):
         self.pages.pop(wp.page_id)
 
     def add_page(self, wp: WebPage):
+        self.page = wp
         self.pages[wp.page_id] = wp
         for child in self.components:
             child.add_page(wp)
@@ -617,6 +626,7 @@ class Div(HTMLBaseComponent):
     def add_component(self, child: typing.Any, position=None, slot=None):
         if slot:
             child.slot = slot
+        child.page = self.page
         child.pages = self.pages
         if position is None:
             self.components.append(child)
