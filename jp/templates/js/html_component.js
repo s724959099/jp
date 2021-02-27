@@ -4,6 +4,10 @@
 Vue.component('html_component', {
 
   render: function (h) {
+    /**
+     * https://vuejs.org/v2/guide/render-function.html
+     * render 的教學
+     * **/
     let comps = []
     // add text
     if (this.jp_props.hasOwnProperty('text')) {
@@ -14,6 +18,7 @@ Vue.component('html_component', {
     for (let i = 0; i < this.jp_props.object_props.length; i++) {
       if (this.jp_props.object_props[i].show) {
         comps.push(h(this.jp_props.object_props[i].vue_type, {
+          // Component props
           props: {
             jp_props: this.jp_props.object_props[i]
           }
@@ -25,16 +30,20 @@ Vue.component('html_component', {
     let description_object = {
       style: this.jp_props.style,
       attrs: this.jp_props.attrs,
-      domProps: {
-        // innerHTML: this.jp_props.inner_html
-      },
-      on: {
-        // click: this.eventFunction,
-      },
-      directives: [],
+      // DOM properties
+      domProps: {},
+      // Event handlers are nested under `on`, though
+      // modifiers such as in `v-on:keyup.enter` are not
+      // supported. You'll have to manually check the
+      // keyCode in the handler instead.
+      on: {},
+      // The name of the slot, if this component is the
+      // child of another component
       slot: this.jp_props.slot,
+      // reference
       ref: 'r' + this.jp_props.id
     };
+    // 因為class 在python 是限定的意思，所以改成class_
     if (this.jp_props.class_) {
       description_object['class'] = this.jp_props.class_;
     }

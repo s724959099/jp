@@ -3,8 +3,8 @@
 <head>
   {% include 'favicon.html' %}
 
-  {% if options.tailwind %}
-    {% if not options.no_internet %}
+  {% if template_options.tailwind %}
+    {% if not template_options.no_internet %}
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tailwindcss/ui@latest/dist/tailwind-ui.min.css">
       <link rel="stylesheet" href="https://unpkg.com/@tailwindcss/typography@^0.1.2/dist/typography.min.css">
     {% else %}
@@ -18,7 +18,7 @@
   {% endif %}
 
 
-  {% if not options.no_internet %}
+  {% if not template_options.no_internet %}
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.9.0/css/all.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css"/>
   {% else %}
@@ -32,7 +32,7 @@
 
   {{ page_options.head_html | safe }}
 
-  {% if not options.no_internet %}
+  {% if not template_options.no_internet %}
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.11/vue.min.js"></script>
   {% else %}
@@ -40,7 +40,7 @@
     <script src="/templates/local/vue.js"></script>
   {% endif %}
 
-  {% if options.highcharts %}
+  {% if template_options.highcharts %}
     {% include 'highcharts.html' %}
   {% endif %}
 

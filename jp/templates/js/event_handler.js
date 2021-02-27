@@ -156,7 +156,7 @@ function send_to_server(e, event_type, debug_flag) {
                     var link = document.querySelector("link[rel*='icon']") || document.createElement('link');
                     link.type = 'image/x-icon';
                     link.rel = 'shortcut icon';
-                    link.href = '{{ url_for(options.static_name, path=' / ') }}' + msg.page_options.favicon;
+                    link.href = '{{ url_for(template_options.static_name, path=' / ') }}' + msg.page_options.favicon;
                     document.getElementsByTagName('head')[0].appendChild(link);
                 }
                 // 實際更新dom 是根據這邊的data

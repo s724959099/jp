@@ -77,8 +77,17 @@ templates = Jinja2Templates(directory=TEMPLATES_DIRECTORY)
 
 component_file_list = create_component_file_list()
 
-template_options = {'tailwind': TAILWIND, 'highcharts': HIGHCHARTS,
-                    'static_name': STATIC_NAME, 'component_file_list': component_file_list, 'no_internet': NO_INTERNET}
+template_options = {
+    'tailwind': TAILWIND,
+    'highcharts': HIGHCHARTS,
+    # static_name:
+    #   main.html -> script path & favicon
+    #   favicon.html -> shortcut
+    'static_name': STATIC_NAME,
+    # script file name list
+    'component_file_list': component_file_list,
+    'no_internet': NO_INTERNET
+}
 
 app = FastAPI(debug=DEBUG)
 app.mount(STATIC_ROUTE, StaticFiles(directory=STATIC_DIRECTORY), name=STATIC_NAME)
@@ -121,33 +130,42 @@ async def justpy_startup():
 
 
 @app.route("/{path:path}")
-class Homepage(HTTPEndpoint):
+class AllPathRouter(HTTPEndpoint):
+    """
+    監聽所有的route
+    """
 
-    async def get(self, request):
-        # 取得 route & function
-        func_to_run = None
+    def _get_route_func_paramter_arg(self, route_target_func, paramter_arg):
+        # get paramter count
+        func_parameters = len(inspect.signature(route_target_func).parameters)
+        assert func_parameters < 2, f"Function {route_target_func.__name__} cannot have more than one parameter"
+        return () if not func_parameters else paramter_arg
+
+    def _check_response(self, func_response_wp):
+        # 確認 func response 是不是WebPage
+        assert issubclass(type(func_response_wp), WebPage), 'Function did not return a web page'
+        assert (
+            len(func_response_wp) > 0 or func_response_wp.html,
+            '\u001b[47;1m\033[93mWeb page is empty, add components\033[0m'
+        )
+
+    async def _get_func_response_wp(self, route_func_arg, route_target_func):
+        if inspect.iscoroutinefunction(route_target_func):
+            func_response_wp = await route_target_func(*route_func_arg)
+        else:
+            func_response_wp = route_target_func(*route_func_arg)
+
+        self._check_response(func_response_wp)
+        return func_response_wp
+
+    def _get_route_target_func(self, request):
         for route in Route.instances:
             func = route.matches(request['path'], request)
             if func:
-                func_to_run = func
-                break
-        # 確認func 參數 以及是否async
-        func_parameters = len(inspect.signature(func_to_run).parameters)
-        assert func_parameters < 2, f"Function {func_to_run.__name__} cannot have more than one parameter"
-        if inspect.iscoroutinefunction(func_to_run):
-            if func_parameters == 1:
-                func_response_wp = await func_to_run(request)
-            else:
-                func_response_wp = await func_to_run()
-        else:
-            if func_parameters == 1:
-                func_response_wp = func_to_run(request)
-            else:
-                func_response_wp = func_to_run()
-        # 確認 func response 是不是WebPage
-        assert issubclass(type(func_response_wp), WebPage), 'Function did not return a web page'
-        assert len(
-            func_response_wp) > 0 or func_response_wp.html, '\u001b[47;1m\033[93mWeb page is empty, add components\033[0m'
+                return func
+        raise Exception(f'not found route: {request["path"]}')
+
+    async def _get_context(self, func_response_wp, request):
         """
         reload_interval: None or sec reload by ajax
         body_style: 在#components 之外的body tag style
@@ -172,11 +190,7 @@ class Homepage(HTTPEndpoint):
                         'events': func_response_wp.events,
                         'favicon': func_response_wp.favicon if func_response_wp.favicon else FAVICON}
         # todo
-        if func_response_wp.use_cache:
-            page_dict = func_response_wp.cache
-        else:
-            page_dict = func_response_wp.build_list()
-        template_options['tailwind'] = func_response_wp.tailwind
+        page_dict = func_response_wp.cache if func_response_wp.use_cache else func_response_wp.build_list()
         """
         template context
         request: for render template
@@ -188,12 +202,24 @@ class Homepage(HTTPEndpoint):
         html: 如果html 有，就改使用html tag string
         """
         context = {
-            'request': request,
+            'request': request,  # for template
             'page_id': func_response_wp.page_id,
             'justpy_dict': json.dumps(page_dict, default=str),
-            'use_websockets': json.dumps(WebPage.use_websockets), 'options': template_options,
+            'use_websockets': json.dumps(WebPage.use_websockets),
+            'template_options': template_options,
             'page_options': page_options,
         }
+        return context
+
+    async def get(self, request):
+        # 使用自己寫的Route 取得mapping 的 route & function
+        route_target_func = self._get_route_target_func(request)
+
+        # 確認func 參數 以及是否async
+        route_func_arg = self._get_route_func_paramter_arg(route_target_func, paramter_arg=(request,))
+        func_response_wp = await self._get_func_response_wp(route_func_arg, route_target_func)
+
+        context = await self._get_context(func_response_wp, request)
         # 轉成template resposne
         response = templates.TemplateResponse(func_response_wp.template_file, context)
 
@@ -224,7 +250,7 @@ class Homepage(HTTPEndpoint):
         return JSONResponse(result)
 
     async def on_disconnect(self, page_id):
-        logger.info(f'In disconnect Homepage')
+        logger.info(f'In disconnect AllPathRouter')
         if page_id in WebPage.instances:
             await WebPage.instances[page_id].on_disconnect()  # Run the specific page disconnect function
         return JSONResponse(False)

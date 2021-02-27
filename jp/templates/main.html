@@ -1,6 +1,5 @@
-{# todo check #}
-{% for file_name in options.component_file_list %}
-  <script src={{ url_for(options.static_name, path=file_name) }}></script>
+{% for file_name in template_options.component_file_list %}
+  <script src={{ url_for(template_options.static_name, path=file_name) }}></script>
 {% endfor %}
 
 <script>
@@ -24,7 +23,6 @@
   {% if page_options.display_url is not none %}
     window.history.pushState("", "", '{{ page_options.display_url }}');
   {%endif %}
-
   let page_id = {{ page_id | safe }};
   let websocket_id = '';
   let use_websockets = JSON.parse('{{ use_websockets }}');
@@ -107,7 +105,7 @@
             if (msg.page_options.favicon.startsWith('http')) {
               link.href = msg.page_options.favicon;
             } else {
-              link.href = '{{ url_for(options.static_name, path='/') }}' + msg.page_options.favicon;
+              link.href = '{{ url_for(template_options.static_name, path='/') }}' + msg.page_options.favicon;
             }
             document.getElementsByTagName('head')[0].appendChild(link);
           }
