@@ -114,6 +114,7 @@ function eventHandler(props, event, form_data, aux) {
 }
 
 function send_to_server(e, event_type, debug_flag) {
+    // todo check send_to_server feature
     if (debug_flag) {
         console.log('Sending message to server:');
         console.log({'type': event_type, 'event_data': e});

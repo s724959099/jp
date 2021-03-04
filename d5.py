@@ -28,4 +28,4 @@ def todo_app():
 
 
 # jp.justpy(todo_app)
-jp.justpy(todo_app, websockets=False)
+jp.justpy(todo_app)

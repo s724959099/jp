@@ -399,6 +399,7 @@ class HTMLBaseComponent(Tailwind):
         return
 
     def convert_object_to_dict(self) -> dict:
+        # todo
         d = {
             'attrs': {},
             'scoped_slots': {},

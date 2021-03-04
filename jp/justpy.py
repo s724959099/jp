@@ -204,6 +204,7 @@ class AllPathRouter(HTTPEndpoint):
         context = {
             'request': request,  # for template
             'page_id': func_response_wp.page_id,
+            # 轉成json 是為了給前端再把它json.parse 一次
             'justpy_dict': json.dumps(page_dict, default=str),
             'use_websockets': json.dumps(WebPage.use_websockets),
             'template_options': template_options,
@@ -241,7 +242,7 @@ class AllPathRouter(HTTPEndpoint):
 
         msg_type = data_dict['type']
         # todo get page_event to check
-        page_event = True if msg_type == 'page_event' else False
+        page_event = msg_type == 'page_event'
         result = await handle_event(data_dict, com_type=1, page_event=page_event)
         if not result:
             return JSONResponse(False)
@@ -268,7 +269,7 @@ class JustpyEvents(WebSocketEndpoint):
         JustpyEvents.socket_id += 1
         # Send back socket_id to page
         # await websocket.send_json({'type': 'websocket_update', 'data': websocket.id})
-        WebPage.loop.create_task(websocket.send_json({'type': 'websocket_update', 'data': websocket.id}))
+        WebPage.loop.create_task(websocket.send_json({'type': 'websocket_on_connect', 'data': websocket.id}))
 
     async def on_receive(self, websocket, data):
         """

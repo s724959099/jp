@@ -79,13 +79,15 @@
     });
 
     socket.addEventListener('message', function (event) {
-      msg = JSON.parse(event.data);
+      let msg = JSON.parse(event.data);
       {% if page_options.debug %}
         console.log('Message received from server ', msg);
         console.log(event);
       {% endif %}
 
       let e = {};
+      // todo check switch
+      console.log('switch: ',msg.type)
       switch (msg.type) {
         case 'page_update':
           if (msg.page_options.redirect) {
@@ -113,7 +115,7 @@
           app1.justpyComponents = msg.data;
 
           break;
-        case 'websocket_update':
+        case 'websocket_on_connect':
           websocket_id = msg.data;
           websocket_ready = true;
 
@@ -129,31 +131,14 @@
           break;
         case 'component_update':
           // update just specific component on the page
+          console.log('component~~~')
+          debugger
           comp_replace(msg.data, app1.justpyComponents);
           break;
         case 'run_javascript':
           let js_result = eval(msg.data);
           break;
 
-        function eval_success() {
-          e = {
-            'event_type': 'result_ready',
-            'visibility': document.visibilityState,
-            'page_id': page_id,
-            'websocket_id': websocket_id,
-            'request_id': msg.request_id,
-            'result': js_result //JSON.stringify(js_result)
-          };
-          {% if 'result_ready' in page_options.events %}
-            if (msg.send) send_to_server(e, 'page_event', false);
-          {% endif %}
-        }
-
-          const jsPromise = (new Promise(function () {
-            js_result = eval(msg.data);
-          })).then(eval_success());
-
-          break;
         case 'run_method':
           // await websocket.send_json({'type': 'run_method', 'data': command, 'id': self.id})
           eval('comp_dict[' + msg.id + '].' + msg.data);
@@ -251,7 +236,7 @@
   function comp_replace(comp, comp_list) {
     let m_id = comp['id'];
     for (let i = 0; i < comp_list.length; i++) {
-      if (comp_list[i]['id'] == m_id) {
+      if (comp_list[i]['id'] === m_id) {
         let spliced = comp_list.splice(i, 1, comp);
       } else {
         if (comp_list[i]['object_props']) {
