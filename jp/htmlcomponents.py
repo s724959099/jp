@@ -145,7 +145,7 @@ class WebPage:
                 (javascript_string, request_id, send)
             )
             return self
-        dict_to_send = {'type': 'run_javascript', 'data': javascript_string, 'request_id': request_id, 'send': send}
+        dict_to_send = {'event_type': 'run_javascript', 'data': javascript_string, 'request_id': request_id, 'send': send}
         await asyncio.gather(*[websocket.send_json(dict_to_send) for websocket in list(websocket_dict.values())],
                              return_exceptions=True)
         return self
@@ -164,7 +164,7 @@ class WebPage:
             component_build = built_list
         for websocket in list(websocket_dict.values()):
             try:
-                WebPage.loop.create_task(websocket.send_json({'type': 'page_update', 'data': component_build,
+                WebPage.loop.create_task(websocket.send_json({'event_type': 'page_update', 'data': component_build,
                                                               'page_options': {'display_url': self.display_url,
                                                                                'title': self.title,
                                                                                'redirect': self.redirect,
@@ -180,7 +180,7 @@ class WebPage:
         except Exception:
             return self
         page_build = self.build_list()
-        dict_to_send = {'type': 'page_update', 'data': page_build,
+        dict_to_send = {'event_type': 'page_update', 'data': page_build,
                         'page_options': {'display_url': self.display_url,
                                          'title': self.title,
                                          'redirect': self.redirect, 'open': self.open,

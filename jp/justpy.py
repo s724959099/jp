@@ -264,13 +264,11 @@ class JustpyEvents(WebSocketEndpoint):
     async def on_connect(self, websocket):
         await websocket.accept()
         websocket.id = JustpyEvents.socket_id
-        websocket.open = True
-        logger.debug(f'Websocket {JustpyEvents.socket_id} connected')
         JustpyEvents.socket_id += 1
-        # Send back socket_id to page
-        # await websocket.send_json({'type': 'websocket_update', 'data': websocket.id})
-        WebPage.loop.create_task(websocket.send_json({'type': 'websocket_on_connect', 'data': websocket.id}))
+        logger.debug(f'Websocket {JustpyEvents.socket_id} connected')
+        WebPage.loop.create_task(websocket.send_json({'event_type': 'websocket_on_connect', 'data': websocket.id}))
 
+    # noinspection PyUnresolvedReferences
     async def on_receive(self, websocket, data):
         """
         Method to accept and act on data received from websocket
@@ -305,7 +303,6 @@ class JustpyEvents(WebSocketEndpoint):
     # noinspection PyUnresolvedReferences
     async def on_disconnect(self, websocket, close_code):
         pid = websocket.page_id
-        websocket.open = False
         WebPage.sockets[pid].pop(websocket.id)
         if not WebPage.sockets[pid]:
             WebPage.sockets.pop(pid)

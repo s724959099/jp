@@ -85,8 +85,8 @@
 
       let e = {};
       // todo check switch
-      console.log('switch: ', msg.type)
-      switch (msg.type) {
+      console.log('switch: ', msg.event_type)
+      switch (msg.event_type) {
         case 'page_update':
           if (msg.page_options.redirect) {
             location.href = msg.page_options.redirect;

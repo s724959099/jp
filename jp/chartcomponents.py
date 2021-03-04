@@ -88,12 +88,12 @@ class HighCharts(HTMLBaseComponent):
 
     async def chart_update(self, update_dict, websocket):
         # https://api.highcharts.com/class-reference/Highcharts.Chart#update
-        await websocket.send_json({'type': 'chart_update', 'data': update_dict, 'id': self.id})
+        await websocket.send_json({'event_type': 'chart_update', 'data': update_dict, 'id': self.id})
         # So the page itself does not update, only the tooltip, return True not None
         return True
 
     async def tooltip_update(self, tooltip, websocket):
-        await websocket.send_json({'type': 'tooltip_update', 'data': tooltip, 'id': self.id})
+        await websocket.send_json({'event_type': 'tooltip_update', 'data': tooltip, 'id': self.id})
         # So the page itself does not update, only the tooltip, return True not None
         return True
 
@@ -107,7 +107,7 @@ class HighCharts(HTMLBaseComponent):
         Example:
          {'id': chart_id, 'series': msg.series_index, 'point': msg.point_index}
         """
-        await websocket.send_json({'type': 'draw_crosshair', 'data': point_list})
+        await websocket.send_json({'event_type': 'draw_crosshair', 'data': point_list})
         # Return True not None so that the page does not update
         return True
 
@@ -121,7 +121,7 @@ class HighCharts(HTMLBaseComponent):
         Example:
          {'id': chart_id, 'series': msg.series_index, 'point': msg.point_index}
         """
-        await websocket.send_json({'type': 'select_point', 'data': point_list})
+        await websocket.send_json({'event_type': 'select_point', 'data': point_list})
         # Return True not None so that the page does not update
         return True
 
