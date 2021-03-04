@@ -440,25 +440,6 @@ class HTMLBaseComponent(Tailwind):
             d['scoped_slots'][s] = self.scoped_slots[s].convert_object_to_dict()
         return d
 
-    async def update(self, socket=None):
-        component_dict = self.convert_object_to_dict()
-        if socket:
-            WebPage.loop.create_task(socket.send_json({'type': 'component_update', 'data': component_dict}))
-        else:
-            pages_to_update = list(self.pages.values())
-            for page in pages_to_update:
-                try:
-                    websocket_dict = WebPage.sockets[page.page_id]
-                except Exception:
-                    continue
-                for websocket in list(websocket_dict.values()):
-                    try:
-                        WebPage.loop.create_task(
-                            websocket.send_json({'type': 'component_update', 'data': component_dict}))
-                    except Exception:
-                        print('Problem with websocket in component update, ignoring')
-        return self
-
     def initialize(self, **kwargs):
         # for subclass __init__
         self.init_id_and_instance()

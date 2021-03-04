@@ -87,7 +87,7 @@
 
       let e = {};
       // todo check switch
-      console.log('switch: ',msg.type)
+      console.log('switch: ', msg.type)
       switch (msg.type) {
         case 'page_update':
           if (msg.page_options.redirect) {
@@ -128,12 +128,6 @@
           };
           send_to_server(e, 'page_event', false);
         {% endif %}
-          break;
-        case 'component_update':
-          // update just specific component on the page
-          console.log('component~~~')
-          debugger
-          comp_replace(msg.data, app1.justpyComponents);
           break;
         case 'run_javascript':
           let js_result = eval(msg.data);
@@ -231,19 +225,6 @@
       })
       .add();
     crosshairs.push(crosshair);
-  }
-
-  function comp_replace(comp, comp_list) {
-    let m_id = comp['id'];
-    for (let i = 0; i < comp_list.length; i++) {
-      if (comp_list[i]['id'] === m_id) {
-        let spliced = comp_list.splice(i, 1, comp);
-      } else {
-        if (comp_list[i]['object_props']) {
-          comp_replace(comp, comp_list[i]['object_props']);
-        }
-      }
-    }
   }
 
   let app1 = new Vue({
