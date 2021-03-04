@@ -115,9 +115,10 @@ function eventHandler(props, event, form_data, aux) {
 
 function send_to_server(e, event_type, debug_flag) {
     // todo check send_to_server feature
+    let data_string = JSON.stringify({'event_type': event_type, 'event_data': e})
     if (debug_flag) {
         console.log('Sending message to server:');
-        console.log({'type': event_type, 'event_data': e});
+        console.log(data_string);
     }
     if (use_websockets) {
         if (web_socket_closed) {
@@ -126,10 +127,10 @@ function send_to_server(e, event_type, debug_flag) {
             return;
         }
         if (websocket_ready) {
-            socket.send(JSON.stringify({'type': event_type, 'event_data': e}));
+            socket.send(data_string);
         } else {
             setTimeout(function () {
-                socket.send(JSON.stringify({'type': event_type, 'event_data': e}));
+                socket.send(data_string);
             }, 1000);
         }
     } else {
@@ -137,7 +138,7 @@ function send_to_server(e, event_type, debug_flag) {
         $.ajax({
             type: "POST",
             url: "/zzz_justpy_ajax",
-            data: JSON.stringify({'type': event_type, 'event_data': e}),
+            data: data_string,
             success: function (msg) {
                 // redirect
                 if (msg.page_options.redirect) {
