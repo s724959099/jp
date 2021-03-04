@@ -34,9 +34,6 @@ class WebPage:
     tailwind = True
     debug = False
     highcharts_theme = None
-    # One of ['avocado', 'dark-blue', 'dark-green', 'dark-unica', 'gray',
-    # 'grid-light', 'grid', 'high-contrast-dark', 'high-contrast-light', 'sand-signika', 'skies', 'sunset']
-    allowed_events = ['click', 'visibilitychange', 'page_ready', 'result_ready']
 
     def __init__(self, **kwargs):
         self.run_javascripts = []
@@ -145,7 +142,8 @@ class WebPage:
                 (javascript_string, request_id, send)
             )
             return self
-        dict_to_send = {'event_type': 'run_javascript', 'data': javascript_string, 'request_id': request_id, 'send': send}
+        dict_to_send = {'event_type': 'run_javascript', 'data': javascript_string, 'request_id': request_id,
+                        'send': send}
         await asyncio.gather(*[websocket.send_json(dict_to_send) for websocket in list(websocket_dict.values())],
                              return_exceptions=True)
         return self
@@ -220,17 +218,6 @@ class WebPage:
             d = obj.convert_object_to_dict()
             object_list.append(d)
         return object_list
-
-    def on(self, event_type, func):
-        if event_type in self.allowed_events:
-            if inspect.ismethod(func):
-                setattr(self, 'on_' + event_type, func)
-            else:
-                setattr(self, 'on_' + event_type, MethodType(func, self))
-            if event_type not in self.events:
-                self.events.append(event_type)
-        else:
-            raise Exception(f'No event of type {event_type} supported')
 
     async def run_event_function(self, event_type, event_data, create_namespace_flag=True):
         event_function = getattr(self, 'on_' + event_type)

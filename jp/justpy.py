@@ -262,11 +262,15 @@ class JustpyEvents(WebSocketEndpoint):
     socket_id = 0
 
     async def on_connect(self, websocket):
+        """
+        在connect 的時候傳送socket_id 讓前端知道現在是哪一個websocket
+        """
         await websocket.accept()
         websocket.id = JustpyEvents.socket_id
         JustpyEvents.socket_id += 1
         logger.debug(f'Websocket {JustpyEvents.socket_id} connected')
-        WebPage.loop.create_task(websocket.send_json({'event_type': 'websocket_on_connect', 'data': websocket.id}))
+        WebPage.loop.create_task(websocket.send_json(
+            {'event_type': 'get_server_websocket_connect_response', 'data': websocket.id}))
 
     # noinspection PyUnresolvedReferences
     async def on_receive(self, websocket, data):

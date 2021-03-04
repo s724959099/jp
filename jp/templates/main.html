@@ -34,6 +34,8 @@
 
   {% for event in page_options.events %}
     document.addEventListener('{{ event }}', function (evt) {
+      console.log('after event',{{ event }})
+      debugger
       const e = {
         'event_type': '{{ event }}',
         'visibility': document.visibilityState,
@@ -113,19 +115,9 @@
           app1.justpyComponents = msg.data;
 
           break;
-        case 'websocket_on_connect':
+        case 'get_server_websocket_connect_response':
           websocket_id = msg.data;
           websocket_ready = true;
-
-        {% if 'page_ready' in page_options.events %}
-          e = {
-            'event_type': 'page_ready',
-            'visibility': document.visibilityState,
-            'page_id': page_id,
-            'websocket_id': websocket_id
-          };
-          send_to_server(e, 'page_event', false);
-        {% endif %}
           break;
         case 'run_javascript':
           eval(msg.data);
