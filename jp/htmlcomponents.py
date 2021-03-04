@@ -27,18 +27,17 @@ class WebPage:
     # TODO: Add page events such as online, beforeunload, resize, visibilitychange
     loop = None
     instances = {}
-    sockets = {}
-    next_page_id = 0
     use_websockets = True
     delete_flag = True
     tailwind = True
     debug = False
     highcharts_theme = None
+    websocket_reverse_mapping = {}  # websocket_id: page_id
 
     def __init__(self, **kwargs):
         self.run_javascripts = []
-        self.page_id = WebPage.next_page_id
-        WebPage.next_page_id += 1
+        # get websocket
+        self.websocket = None
         self.cache = None  # Set this attribute if you want to use the cache.
         self.use_cache = False  # Determines whether the page uses the cache or not
         self.template_file = 'tailwind.html'
@@ -67,8 +66,24 @@ class WebPage:
         for k, v in kwargs.items():
             self.__setattr__(k, v)
 
+    @property
+    def page_id(self):
+        return id(self)
+
     def __repr__(self):
         return f'{self.__class__.__name__}(page_id: {self.page_id}, number of components: {len(self.components)}, reload interval: {self.reload_interval})'
+
+    @staticmethod
+    async def init_websocket(page_id,websocket):
+        websocket_id = id(websocket)
+        wp = WebPage.instances.get(page_id)
+        wp.websocket = websocket
+        WebPage.websocket_reverse_mapping[websocket_id] = page_id
+
+        if wp and wp.run_javascripts:
+            while len(wp.run_javascripts):
+                (javascript_string, request_id, send) = wp.run_javascripts.pop(0)
+                await wp.run_javascript(javascript_string=javascript_string, request_id=request_id, send=send)
 
     def __len__(self):
         return len(self.components)
@@ -136,16 +151,16 @@ class WebPage:
 
     async def run_javascript(self, javascript_string, *, request_id=None, send=True):
         try:
-            websocket_dict = WebPage.sockets[self.page_id]
+            websocket = self.websocket
         except Exception:
             self.run_javascripts.append(
                 (javascript_string, request_id, send)
             )
             return self
+        # todo 其他參數不知道要幹嘛用的
         dict_to_send = {'event_type': 'run_javascript', 'data': javascript_string, 'request_id': request_id,
                         'send': send}
-        await asyncio.gather(*[websocket.send_json(dict_to_send) for websocket in list(websocket_dict.values())],
-                             return_exceptions=True)
+        await asyncio.create_task(websocket.send_json(dict_to_send))
         return self
 
     async def reload(self):
@@ -245,7 +260,6 @@ class HTMLBaseComponent(Tailwind):
     """
     Base Component for all HTML components
     """
-    next_id = 1
     html_render = ''
     # for singletone id: instance
     instances = {}
@@ -279,11 +293,6 @@ class HTMLBaseComponent(Tailwind):
         cls = HTMLBaseComponent
         temp = kwargs.get('temp', cls.temp_flag)
         delete_flag = kwargs.get('delete_flag', cls.delete_flag)
-        if temp and delete_flag:
-            self.id = None
-        else:
-            self.id = cls.next_id
-            cls.next_id += 1
 
         self.events = []
         self.event_modifiers = Dict()
@@ -317,6 +326,10 @@ class HTMLBaseComponent(Tailwind):
         self.prop_list = []  # For components from libraries like quasar
 
         self.initialize(**kwargs)
+
+    @property
+    def id(self):
+        return id(self)
 
     def __new__(cls, *args, **kwargs):
         from .justpy import justpy_parser
@@ -398,9 +411,6 @@ class HTMLBaseComponent(Tailwind):
         # Name is a special case. Allow it to be defined for all
         with try_save():
             d['attrs']['name'] = self.name
-        # Add id if CSS transition is defined
-        if self.transition:
-            self.check_transition()
         if self.id:
             d['attrs'] = {'id': str(self.id)}
 
@@ -444,9 +454,6 @@ class HTMLBaseComponent(Tailwind):
 
     def init_id_and_instance(self):
         cls = HTMLBaseComponent
-        if not self.id:
-            self.id = cls.next_id
-            cls.next_id += 1
         cls.instances[self.id] = self
 
     def set_keyword_events(self, **kwargs):
@@ -519,12 +526,6 @@ class HTMLBaseComponent(Tailwind):
             self.remove_class('hidden')
         else:
             self.set_class('hidden')
-
-    def check_transition(self):
-        if self.transition and (not self.id):
-            cls = HTMLBaseComponent
-            self.id = cls.next_id
-            cls.next_id += 1
 
     def remove_page_from_pages(self, wp: WebPage):
         self.pages.pop(wp.page_id)

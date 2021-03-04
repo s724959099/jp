@@ -115,7 +115,12 @@ function eventHandler(props, event, form_data, aux) {
 
 function send_to_server(e, event_type, debug_flag) {
   // todo check send_to_server feature
-  let data_string = JSON.stringify({'event_type': event_type, 'event_data': e, 'page_id': page_id})
+  let data_string = JSON.stringify(
+    {
+      'event_type': event_type,
+      'event_data': e,
+      'page_id': page_id,
+    })
   if (debug_flag) {
     console.log('Sending message to server:');
     console.log(data_string);

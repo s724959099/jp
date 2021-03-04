@@ -259,48 +259,31 @@ class AllPathRouter(HTTPEndpoint):
 
 @app.websocket_route("/")
 class JustpyEvents(WebSocketEndpoint):
-    socket_id = 0
 
     async def on_connect(self, websocket):
+        # todo 其實不用這邊給websocket
         """
-        在connect 的時候傳送socket_id 讓前端知道現在是哪一個websocket
+        在connect 的時候傳送websocket_id 讓前端知道現在是哪一個websocket 並且在讓前端船page_ready 將page_id 與websocket 綁在一起
         """
         await websocket.accept()
-        websocket.id = JustpyEvents.socket_id
-        JustpyEvents.socket_id += 1
-        logger.debug(f'Websocket {JustpyEvents.socket_id} connected')
-        WebPage.loop.create_task(websocket.send_json(
-            {'event_type': 'get_server_websocket_connect_response', 'data': websocket.id}))
 
     # noinspection PyUnresolvedReferences
     async def on_receive(self, websocket, data):
         """
         Method to accept and act on data received from websocket
         """
-        logger.debug(f'Socket {websocket.id} data received: {data}')
+        websocket_id = id(websocket)
+        logger.debug(f'Socket {websocket_id} data received: {data}')
         data_dict = json.loads(data)
         event_type = data_dict['event_type']
         assert event_type in ['connect', 'event', 'page_event'], 'event type error'
+        # page first init
         if event_type == 'connect':
-            # Initial message sent from browser after connection is established
-            # WebPage.sockets is a dictionary of dictionaries
-            # First dictionary key is page id
-            # Second dictionary key is socket id
-            page_key = data_dict['page_id']
-            websocket.page_id = page_key
-            if page_key in WebPage.sockets:
-                WebPage.sockets[page_key][websocket.id] = websocket
-            else:
-                WebPage.sockets[page_key] = {websocket.id: websocket}
-
-            wp = WebPage.instances.get(page_key)
-            if wp and wp.run_javascripts:
-                while len(wp.run_javascripts):
-                    (javascript_string, request_id, send) = wp.run_javascripts.pop(0)
-                    await wp.run_javascript(javascript_string=javascript_string, request_id=request_id, send=send)
-
+            page_id = data_dict['page_id']
+            await WebPage.init_websocket(page_id, websocket)
             return
 
+        # todo 這邊要改 最主要是handle_event
         page_event = True if event_type == 'page_event' else False
         WebPage.loop.create_task(handle_event(data_dict, com_type=0, page_event=page_event))
 
@@ -489,11 +472,6 @@ class BasicHTMLParser(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         c = component_by_tag(tag, self.context, page=self.wp)
-        # set id
-        if not c.id:
-            cls = HTMLBaseComponent
-            c.id = cls.next_id
-            cls.next_id += 1
 
         if c is None:
             print(tag, 'No such tag, Div being used instead *****************************************')

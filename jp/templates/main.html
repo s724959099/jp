@@ -34,7 +34,7 @@
 
   {% for event in page_options.events %}
     document.addEventListener('{{ event }}', function (evt) {
-      console.log('after event',{{ event }})
+      console.log('after event', {{ event }})
       debugger
       const e = {
         'event_type': '{{ event }}',
@@ -61,8 +61,11 @@
     }
 
     socket.addEventListener('open', function (event) {
-      console.log('Webocket opened');
+      /**
+       * connect 設定page_id 以及websocket_id 讓 disconnect 的時候可以取消註冊
+       * **/
       send_to_server(null, 'connect', false)
+      websocket_ready = true;
     });
 
     socket.addEventListener('error', function (event) {
@@ -115,10 +118,11 @@
           app1.justpyComponents = msg.data;
 
           break;
-        case 'get_server_websocket_connect_response':
-          websocket_id = msg.data;
-          websocket_ready = true;
-          break;
+        {# todo #}
+        {#case 'get_server_websocket_connect_response':#}
+        {#  websocket_id = msg.data;#}
+        {#  websocket_ready = true;#}
+        {#  break;#}
         case 'run_javascript':
           eval(msg.data);
           break;
