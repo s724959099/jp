@@ -539,11 +539,6 @@ class HTMLBaseComponent(Tailwind):
             self.id = cls.next_id
             cls.next_id += 1
 
-    async def run_method(self, command, websocket):
-        await websocket.send_json({'type': 'run_method', 'data': command, 'id': self.id})
-        # So the page itself does not update, return True not None
-        return True
-
     def remove_page_from_pages(self, wp: WebPage):
         self.pages.pop(wp.page_id)
 

@@ -28,8 +28,6 @@
   let use_websockets = JSON.parse('{{ use_websockets }}');
   let justpyComponents = {{ justpy_dict | safe }};
   let crosshairs = [];
-  let comp_dict = {};  // Hold components for running methods
-
   // for other variables
   let web_socket_closed = false;
   let socket;
@@ -130,13 +128,9 @@
         {% endif %}
           break;
         case 'run_javascript':
-          let js_result = eval(msg.data);
+          eval(msg.data);
           break;
-
-        case 'run_method':
-          // await websocket.send_json({'type': 'run_method', 'data': command, 'id': self.id})
-          eval('comp_dict[' + msg.id + '].' + msg.data);
-          break;
+        // for high chart
         case 'draw_crosshair':
           // Remove previous crosshairs
           for (let i = 0; i < crosshairs.length; i++) {
@@ -151,6 +145,7 @@
             draw_crosshair(chart, chart.series[m.series], point);
           }
           break;
+        // for high chart
         case 'select_point':
           for (let i = 0; i < msg.data.length; i++) {
             const m = msg.data[i];
@@ -159,10 +154,12 @@
             chart.series[m.series].data[m.point].select();
           }
           break;
+        // for high chart
         case 'chart_update':
           const chart = cached_graph_def['chart' + msg.id];
           chart.update(msg.data);
           break;
+        // for high chart
         case 'tooltip_update':
           // https://github.com/highcharts/highcharts/issues/6824
           let chart_on = cached_graph_def['chart' + msg.id];
