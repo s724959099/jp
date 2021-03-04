@@ -60,7 +60,7 @@
 
     socket.addEventListener('open', function (event) {
       console.log('Webocket opened');
-      socket.send(JSON.stringify({'type': 'connect', 'page_id': page_id}));
+      send_to_server(null, 'connect', false)
     });
 
     socket.addEventListener('error', function (event) {

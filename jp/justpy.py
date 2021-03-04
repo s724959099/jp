@@ -278,6 +278,7 @@ class JustpyEvents(WebSocketEndpoint):
         logger.debug(f'Socket {websocket.id} data received: {data}')
         data_dict = json.loads(data)
         event_type = data_dict['event_type']
+        assert event_type in ['connect', 'event', 'page_event'], 'event type error'
         if event_type == 'connect':
             # Initial message sent from browser after connection is established
             # WebPage.sockets is a dictionary of dictionaries
@@ -297,26 +298,9 @@ class JustpyEvents(WebSocketEndpoint):
                     await wp.run_javascript(javascript_string=javascript_string, request_id=request_id, send=send)
 
             return
-        if event_type in ['event', 'page_event']:
-            # Message sent when an event occurs in the browser
-            session_cookie = websocket.cookies.get(SESSION_COOKIE_NAME)
-            if SESSIONS and session_cookie:
-                session_id = cookie_signer.unsign(session_cookie).decode("utf-8")
-                data_dict['event_data']['session_id'] = session_id
-            # await self._event(data_dict)
-            # data_dict['event_data']['msg_type'] = msg_type
-            page_event = True if event_type == 'page_event' else False
-            WebPage.loop.create_task(handle_event(data_dict, com_type=0, page_event=page_event))
-            return
-        if event_type == 'zzz_page_event':
-            # Message sent when an event occurs in the browser
-            session_cookie = websocket.cookies.get(SESSION_COOKIE_NAME)
-            if SESSIONS and session_cookie:
-                session_id = cookie_signer.unsign(session_cookie).decode("utf-8")
-                data_dict['event_data']['session_id'] = session_id
-            # data_dict['event_data']['msg_type'] = msg_type
-            WebPage.loop.create_task(handle_event(data_dict, com_type=0, page_event=True))
-            return
+
+        page_event = True if event_type == 'page_event' else False
+        WebPage.loop.create_task(handle_event(data_dict, com_type=0, page_event=page_event))
 
     # noinspection PyUnresolvedReferences
     async def on_disconnect(self, websocket, close_code):
