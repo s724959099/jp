@@ -151,16 +151,15 @@ class WebPage:
 
     async def run_javascript(self, javascript_string, *, request_id=None, send=True):
         try:
-            websocket = self.websocket
+            websocket_dict = WebPage.sockets[self.page_id]
         except Exception:
             self.run_javascripts.append(
                 (javascript_string, request_id, send)
             )
             return self
-        # todo 其他參數不知道要幹嘛用的
-        dict_to_send = {'event_type': 'run_javascript', 'data': javascript_string, 'request_id': request_id,
-                        'send': send}
-        await asyncio.create_task(websocket.send_json(dict_to_send))
+        dict_to_send = {'event_type': 'run_javascript', 'data': javascript_string, 'request_id': request_id, 'send': send}
+        await asyncio.gather(*[websocket.send_json(dict_to_send) for websocket in list(websocket_dict.values())],
+                             return_exceptions=True)
         return self
 
     async def reload(self):
@@ -234,6 +233,17 @@ class WebPage:
             object_list.append(d)
         return object_list
 
+    def on(self, event_type, func):
+        if event_type in self.allowed_events:
+            if inspect.ismethod(func):
+                setattr(self, 'on_' + event_type, func)
+            else:
+                setattr(self, 'on_' + event_type, MethodType(func, self))
+            if event_type not in self.events:
+                self.events.append(event_type)
+        else:
+            raise Exception(f'No event of type {event_type} supported')
+
     async def run_event_function(self, event_type, event_data, create_namespace_flag=True):
         event_function = getattr(self, 'on_' + event_type)
         if create_namespace_flag:
@@ -260,6 +270,7 @@ class HTMLBaseComponent(Tailwind):
     """
     Base Component for all HTML components
     """
+    next_id = 1
     html_render = ''
     # for singletone id: instance
     instances = {}
@@ -293,6 +304,11 @@ class HTMLBaseComponent(Tailwind):
         cls = HTMLBaseComponent
         temp = kwargs.get('temp', cls.temp_flag)
         delete_flag = kwargs.get('delete_flag', cls.delete_flag)
+        if temp and delete_flag:
+            self.id = None
+        else:
+            self.id = cls.next_id
+            cls.next_id += 1
 
         self.events = []
         self.event_modifiers = Dict()
@@ -326,10 +342,6 @@ class HTMLBaseComponent(Tailwind):
         self.prop_list = []  # For components from libraries like quasar
 
         self.initialize(**kwargs)
-
-    @property
-    def id(self):
-        return id(self)
 
     def __new__(cls, *args, **kwargs):
         from .justpy import justpy_parser
@@ -411,6 +423,9 @@ class HTMLBaseComponent(Tailwind):
         # Name is a special case. Allow it to be defined for all
         with try_save():
             d['attrs']['name'] = self.name
+        # Add id if CSS transition is defined
+        if self.transition:
+            self.check_transition()
         if self.id:
             d['attrs'] = {'id': str(self.id)}
 
@@ -454,6 +469,9 @@ class HTMLBaseComponent(Tailwind):
 
     def init_id_and_instance(self):
         cls = HTMLBaseComponent
+        if not self.id:
+            self.id = cls.next_id
+            cls.next_id += 1
         cls.instances[self.id] = self
 
     def set_keyword_events(self, **kwargs):
@@ -526,6 +544,12 @@ class HTMLBaseComponent(Tailwind):
             self.remove_class('hidden')
         else:
             self.set_class('hidden')
+
+    def check_transition(self):
+        if self.transition and (not self.id):
+            cls = HTMLBaseComponent
+            self.id = cls.next_id
+            cls.next_id += 1
 
     def remove_page_from_pages(self, wp: WebPage):
         self.pages.pop(wp.page_id)
