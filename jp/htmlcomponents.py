@@ -74,7 +74,7 @@ class WebPage:
         return f'{self.__class__.__name__}(page_id: {self.page_id}, number of components: {len(self.components)}, reload interval: {self.reload_interval})'
 
     @staticmethod
-    async def init_websocket(page_id,websocket):
+    async def init_websocket(page_id, websocket):
         websocket_id = id(websocket)
         wp = WebPage.instances.get(page_id)
         wp.websocket = websocket
@@ -150,47 +150,37 @@ class WebPage:
             del (self.cookies[str(k)])
 
     async def run_javascript(self, javascript_string, *, request_id=None, send=True):
-        try:
-            websocket_dict = WebPage.sockets[self.page_id]
-        except Exception:
+        websocket = self.websocket
+        if not websocket:
             self.run_javascripts.append(
                 (javascript_string, request_id, send)
             )
-            return self
-        dict_to_send = {'event_type': 'run_javascript', 'data': javascript_string, 'request_id': request_id, 'send': send}
-        await asyncio.gather(*[websocket.send_json(dict_to_send) for websocket in list(websocket_dict.values())],
-                             return_exceptions=True)
+        return self
+
+        dict_to_send = {'event_type': 'run_javascript', 'data': javascript_string, 'request_id': request_id,
+                        'send': send}
+        WebPage.loop.create_task(websocket.send_json(dict_to_send))
         return self
 
     async def reload(self):
         return await self.run_javascript('location.reload()')
 
     async def update_old(self, *, built_list=None):
-        try:
-            websocket_dict = WebPage.sockets[self.page_id]
-        except Exception:
-            return self
+        websocket = self.websocket
         if not built_list:
             component_build = self.build_list()
         else:
             component_build = built_list
-        for websocket in list(websocket_dict.values()):
-            try:
-                WebPage.loop.create_task(websocket.send_json({'event_type': 'page_update', 'data': component_build,
-                                                              'page_options': {'display_url': self.display_url,
-                                                                               'title': self.title,
-                                                                               'redirect': self.redirect,
-                                                                               'open': self.open,
-                                                                               'favicon': self.favicon}}))
-            except Exception:
-                print('Problem with websocket in page update, ignoring')
+        WebPage.loop.create_task(websocket.send_json({'event_type': 'page_update', 'data': component_build,
+                                                      'page_options': {'display_url': self.display_url,
+                                                                       'title': self.title,
+                                                                       'redirect': self.redirect,
+                                                                       'open': self.open,
+                                                                       'favicon': self.favicon}}))
         return self
 
     async def update(self, websocket=None):
-        try:
-            websocket_dict = WebPage.sockets[self.page_id]
-        except Exception:
-            return self
+        websocket = websocket or self.websocket
         page_build = self.build_list()
         dict_to_send = {'event_type': 'page_update', 'data': page_build,
                         'page_options': {'display_url': self.display_url,
@@ -198,11 +188,7 @@ class WebPage:
                                          'redirect': self.redirect, 'open': self.open,
                                          'favicon': self.favicon}}
 
-        if websocket:
-            WebPage.loop.create_task(websocket.send_json(dict_to_send))
-        else:
-            await asyncio.gather(*[websocket.send_json(dict_to_send) for websocket in list(websocket_dict.values())],
-                                 return_exceptions=True)
+        WebPage.loop.create_task(websocket.send_json(dict_to_send))
         return self
 
     async def delayed_update(self, delay):
@@ -232,17 +218,6 @@ class WebPage:
             d = obj.convert_object_to_dict()
             object_list.append(d)
         return object_list
-
-    def on(self, event_type, func):
-        if event_type in self.allowed_events:
-            if inspect.ismethod(func):
-                setattr(self, 'on_' + event_type, func)
-            else:
-                setattr(self, 'on_' + event_type, MethodType(func, self))
-            if event_type not in self.events:
-                self.events.append(event_type)
-        else:
-            raise Exception(f'No event of type {event_type} supported')
 
     async def run_event_function(self, event_type, event_data, create_namespace_flag=True):
         event_function = getattr(self, 'on_' + event_type)
@@ -1454,7 +1429,7 @@ class AutoTable(Table):
 
 
 def get_websocket(event_data):
-    return WebPage.sockets[event_data['page_id']][event_data['websocket_id']]
+    return WebPage.instances[event_data['page_id']].websocket
 
 
 def create_transition():
