@@ -144,10 +144,9 @@ class AllPathRouter(HTTPEndpoint):
     def _check_response(self, func_response_wp):
         # 確認 func response 是不是WebPage
         assert issubclass(type(func_response_wp), WebPage), 'Function did not return a web page'
-        assert (
-            len(func_response_wp) > 0 or func_response_wp.html,
+        assert \
+            len(func_response_wp) > 0 or func_response_wp.html, \
             '\u001b[47;1m\033[93mWeb page is empty, add components\033[0m'
-        )
 
     async def _get_func_response_wp(self, route_func_arg, route_target_func):
         if inspect.iscoroutinefunction(route_target_func):

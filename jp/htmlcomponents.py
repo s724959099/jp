@@ -155,7 +155,6 @@ class WebPage:
             self.run_javascripts.append(
                 (javascript_string, request_id, send)
             )
-        return self
 
         dict_to_send = {'event_type': 'run_javascript', 'data': javascript_string, 'request_id': request_id,
                         'send': send}
