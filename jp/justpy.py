@@ -44,7 +44,6 @@ STATIC_ROUTE = config('STATIC_MOUNT', cast=str, default='/static')
 STATIC_NAME = config('STATIC_NAME', cast=str, default='static')
 TAILWIND = config('TAILWIND', cast=bool, default=True)
 
-NO_INTERNET = config('NO_INTERNET', cast=bool, default=True)
 
 
 def create_component_file_list():
@@ -67,7 +66,6 @@ template_options = {
     'static_name': STATIC_NAME,
     # script file name list
     'component_file_list': component_file_list,
-    'no_internet': NO_INTERNET
 }
 
 app = FastAPI(debug=DEBUG)

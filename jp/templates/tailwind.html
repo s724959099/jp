@@ -4,37 +4,18 @@
   <meta charset="UTF-8">
 
   {% if template_options.tailwind %}
-    {% if template_options.no_internet %}
-      <link href="/templates/local/tailwind/base.css" rel="stylesheet">
-      <link href="/templates/local/tailwind/components.css" rel="stylesheet">
-      <link href="/templates/local/tailwind/typography.css" rel="stylesheet">
-      <link href="/templates/local/tailwind/utilities.css" rel="stylesheet">
-    {% else %}
-      <link rel="stylesheet"
-            href="https://unpkg.com/tailwindcss@^1.4.6/dist/base.min.css">
-      <link rel="stylesheet"
-            href="https://unpkg.com/tailwindcss@^1.4.6/dist/components.min.css">
-      <link rel="stylesheet"
-            href="https://unpkg.com/@tailwindcss/typography@^0.1.2/dist/typography.min.css">
-      <link rel="stylesheet"
-            href="https://unpkg.com/tailwindcss@^1.4.6/dist/utilities.min.css">
-    {% endif %}
+    <link href="/templates/local/tailwind/base.css" rel="stylesheet">
+    <link href="/templates/local/tailwind/components.css" rel="stylesheet">
+    <link href="/templates/local/tailwind/typography.css" rel="stylesheet">
+    <link href="/templates/local/tailwind/utilities.css" rel="stylesheet">
     <style>
       {% include 'css/form.css' %}
     </style>
   {% endif %}
 
 
-  {% if template_options.no_internet %}
-    <link rel="stylesheet"
-          href="/templates/local/fontawesome/css/all.min.css"/>
-  {% else %}
-    <link rel="stylesheet"
-          href="https://use.fontawesome.com/releases/v5.9.0/css/all.css"/>
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css"/>
-
-  {% endif %}
+  <link rel="stylesheet"
+        href="/templates/local/fontawesome/css/all.min.css"/>
 
   <style>
     {{ page_options.css }}
@@ -42,14 +23,8 @@
 
   {{ page_options.head_html | safe }}
 
-  {% if template_options.no_internet %}
-    <script src="/templates/local/jquery.js"></script>
-    <script src="/templates/local/vue.js"></script>
-  {% else %}
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.11/vue.min.js"></script>
-  {% endif %}
+  <script src="/templates/local/jquery.js"></script>
+  <script src="/templates/local/vue.js"></script>
 
 </head>
 
