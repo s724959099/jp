@@ -9,7 +9,8 @@ async def parse_demo(request):
     <p class="m-2 p-2 text-blue-500 text-xl" name="p2">Paragraph 2</p>
     <p class="m-2 p-2 text-green-500 text-xl">Paragraph 3</p>
     </div>
-    """, a=wp)
+    """)
+    wp.add_component(c)
     p2 = c.name_dict['p2']
 
     def my_click(self, msg):

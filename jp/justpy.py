@@ -1,7 +1,6 @@
 # todo remove startlette
 import json
 from contextlib import asynccontextmanager
-from ssl import PROTOCOL_SSLv23
 from fastapi.responses import Response
 
 import fnmatch
@@ -17,7 +16,6 @@ from starlette.config import Config
 from starlette.endpoints import HTTPEndpoint
 from starlette.endpoints import WebSocketEndpoint
 from starlette.middleware.gzip import GZipMiddleware
-from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.responses import JSONResponse
 from html.parser import HTMLParser
 # todo remove
@@ -42,29 +40,20 @@ STATIC_NAME = config('STATIC_NAME', cast=str, default='static')
 TAILWIND = config('TAILWIND', cast=bool, default=True)
 
 
-def create_component_file_list():
-    file_list = []
-    component_dir = os.path.join(STATIC_DIRECTORY, 'components')
-    if os.path.isdir(component_dir):
-        for file in os.listdir(component_dir):
-            if fnmatch.fnmatch(file, '*.js'):
-                file_list.append(f'/components/{file}')
-    return file_list
 
 
 templates = Jinja2Templates(directory=TEMPLATES_DIRECTORY)
 
-component_file_list = create_component_file_list()
 
 template_options = {
     'tailwind': TAILWIND,
     # static_name:
     'static_name': STATIC_NAME,
     # script file name list
-    'component_file_list': component_file_list,
 }
 
 app = FastAPI(debug=DEBUG)
+app.debug = True
 app.mount(STATIC_ROUTE, StaticFiles(directory=STATIC_DIRECTORY),
           name=STATIC_NAME)
 app.mount('/templates', StaticFiles(directory=current_dir + '/templates'),
@@ -369,7 +358,7 @@ def justpy(func=None, *, start_server=True, websockets=True, host='127.0.0.1',
         template_options[k.lower()] = v
 
     if start_server:
-        uvicorn.run(app, host=host, port=port)
+        uvicorn.run(app, host=host, port=port, debug=True)
 
     return func_to_run
 
