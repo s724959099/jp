@@ -274,15 +274,6 @@ class JustpyEvents(WebSocketEndpoint):
         # delete it
         WebPage.websocket_reverse_mapping.pop(websocket_id)
 
-        if MEMORY_DEBUG:
-            print('************************')
-            print('Elements: ', len(HTMLBaseComponent.instances),
-                  HTMLBaseComponent.instances)
-            print('WebPages: ', len(WebPage.instances), WebPage.instances)
-            process = psutil.Process(os.getpid())
-            print(f'Memory used: {process.memory_info().rss:,}')
-            print('************************')
-
 
 @asynccontextmanager
 async def handle_evnet_beofore_and_after(c, event_data):
@@ -361,7 +352,7 @@ async def handle_event(data_dict, com_type=0, page_event=False):
 
 
 def justpy(func=None, *, start_server=True, websockets=True, host='127.0.0.1',
-           port='5000', startup=None, **kwargs):
+           port=5000, startup=None, **kwargs):
     global func_to_run, startup_func
     if func:
         func_to_run = func
@@ -450,8 +441,7 @@ class BasicHTMLParser(HTMLParser):
             cls.next_id += 1
 
         if c is None:
-            print(tag,
-                  'No such tag, Div being used instead *****************************************')
+            logger.warning(f'No such tag({tag}), Div being used instead')
             c = Div()
         for attr in attrs:
             attr = list(attr)
