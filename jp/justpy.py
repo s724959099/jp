@@ -33,9 +33,6 @@ print(f'Module directory: {current_dir}, Application directory: {os.getcwd()}')
 
 config = Config('justpy.env')
 DEBUG = config('DEBUG', cast=bool, default=True)
-CRASH = config('CRASH', cast=bool, default=False)
-HOST = config('HOST', cast=str, default='127.0.0.1')
-PORT = config('PORT', cast=int, default=8000)
 
 TEMPLATES_DIRECTORY = config('TEMPLATES_DIRECTORY', cast=str,
                              default=current_dir + '/templates')
@@ -43,7 +40,6 @@ STATIC_DIRECTORY = config('STATIC_DIRECTORY', cast=str, default=os.getcwd())
 STATIC_ROUTE = config('STATIC_MOUNT', cast=str, default='/static')
 STATIC_NAME = config('STATIC_NAME', cast=str, default='static')
 TAILWIND = config('TAILWIND', cast=bool, default=True)
-
 
 
 def create_component_file_list():
@@ -104,7 +100,6 @@ async def justpy_startup():
             await startup_func()
         else:
             startup_func()
-    print(f'JustPy ready to go on http://{HOST}:{PORT}')
 
 
 @app.route("/{path:path}")
@@ -342,9 +337,6 @@ async def handle_event(data_dict, com_type=0, page_event=False):
             logger.debug(f'Event result: {event_result}')
         except Exception:
             # raise Exception(e)
-            if CRASH:
-                print(traceback.format_exc())
-                sys.exit(1)
             event_result = None
             logger.error(
                 'Event result: \u001b[47;1m\033[93mError in event handler:\033[0m')
@@ -368,11 +360,9 @@ async def handle_event(data_dict, com_type=0, page_event=False):
         return ajax_response
 
 
-def justpy(func=None, *, start_server=True, websockets=True, host=HOST,
-           port=PORT, startup=None, **kwargs):
-    global func_to_run, startup_func, HOST, PORT
-    HOST = host
-    PORT = port
+def justpy(func=None, *, start_server=True, websockets=True, host='127.0.0.1',
+           port='5000', startup=None, **kwargs):
+    global func_to_run, startup_func
     if func:
         func_to_run = func
     else:
