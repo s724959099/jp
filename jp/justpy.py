@@ -39,11 +39,7 @@ STATIC_ROUTE = config('STATIC_MOUNT', cast=str, default='/static')
 STATIC_NAME = config('STATIC_NAME', cast=str, default='static')
 TAILWIND = config('TAILWIND', cast=bool, default=True)
 
-
-
-
 templates = Jinja2Templates(directory=TEMPLATES_DIRECTORY)
-
 
 template_options = {
     'tailwind': TAILWIND,
@@ -53,12 +49,10 @@ template_options = {
 }
 
 app = FastAPI(debug=DEBUG)
-app.debug = True
 app.mount(STATIC_ROUTE, StaticFiles(directory=STATIC_DIRECTORY),
           name=STATIC_NAME)
 app.mount('/templates', StaticFiles(directory=current_dir + '/templates'),
           name='templates')
-# Handles GZip responses for any request that includes "gzip" in the Accept-Encoding header.
 app.add_middleware(GZipMiddleware)
 
 
@@ -177,6 +171,7 @@ class AllPathRouter(HTTPEndpoint):
         return context
 
     async def get(self, request):
+        """get router"""
         # 使用自己寫的Route 取得mapping 的 route & function
         if request['path'] == '/favicon.ico':
             return Response(status_code=404)
@@ -197,18 +192,15 @@ class AllPathRouter(HTTPEndpoint):
         return response
 
     async def post(self, request):
-        # todo
+        """post router"""
         # Handles post method. Used in Ajax mode for events when websockets disabled
         if request['path'] != '/zzz_justpy_ajax':
             return
         data_dict = await request.json()
-        # disconnect
-        # {'type': 'event', 'event_data': {'event_type': 'beforeunload', 'page_id': 0}}
         if data_dict['event_data']['event_type'] == 'beforeunload':
             return await self.on_disconnect(data_dict['event_data']['page_id'])
 
         msg_type = data_dict['type']
-        # todo get page_event to check
         page_event = msg_type == 'page_event'
         result = await handle_event(data_dict, com_type=1,
                                     page_event=page_event)
@@ -216,7 +208,9 @@ class AllPathRouter(HTTPEndpoint):
             return JSONResponse(False)
         return JSONResponse(result)
 
-    async def on_disconnect(self, page_id):
+    @staticmethod
+    async def on_disconnect(page_id):
+        """disconnect remove"""
         logger.info(f'In disconnect AllPathRouter')
         if page_id in WebPage.instances:
             await WebPage.instances[
@@ -340,8 +334,21 @@ async def handle_event(data_dict, com_type=0, page_event=False):
         return ajax_response
 
 
-def justpy(func=None, *, start_server=True, websockets=True, host='127.0.0.1',
+def justpy(func=None, *, websockets=True, host='127.0.0.1',
            port=5000, startup=None, **kwargs):
+    """
+
+    Args:
+        func: 要執行的程式
+        websockets: 是否使用websocket
+        host: uvicorn.run(app, host=host, port=port, debug=True)
+        port: uvicorn.run(app, host=host, port=port, debug=True)
+        startup: startup function
+        **kwargs:
+
+    Returns:
+
+    """
     global func_to_run, startup_func
     if func:
         func_to_run = func
@@ -353,25 +360,14 @@ def justpy(func=None, *, start_server=True, websockets=True, host='127.0.0.1',
         WebPage.use_websockets = True
     else:
         WebPage.use_websockets = False
+    # 所有的router 都導入到 func_to_run
     Route("/{path:path}", func_to_run, last=True, name='default')
     for k, v in kwargs.items():
         template_options[k.lower()] = v
 
-    if start_server:
-        uvicorn.run(app, host=host, port=port, debug=True)
+    uvicorn.run(app, host=host, port=port, debug=True)
 
     return func_to_run
-
-
-def convert_dict_to_object(d):
-    obj = globals()[d['class_name']]()
-    for obj_prop in d['object_props']:
-        obj.add(convert_dict_to_object(obj_prop))
-    # combine the dictionaries
-    for k, v in {**d, **d['attrs']}.items():
-        if k != 'id':
-            obj.__dict__[k] = v
-    return obj
 
 
 def redirect(url):
