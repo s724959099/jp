@@ -12,7 +12,6 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from itsdangerous import Signer
 from loguru import logger
 from starlette.config import Config
 from starlette.endpoints import HTTPEndpoint
@@ -35,28 +34,8 @@ print(f'Module directory: {current_dir}, Application directory: {os.getcwd()}')
 config = Config('justpy.env')
 DEBUG = config('DEBUG', cast=bool, default=True)
 CRASH = config('CRASH', cast=bool, default=False)
-MEMORY_DEBUG = config('MEMORY_DEBUG', cast=bool, default=False)
-if MEMORY_DEBUG:
-    import psutil
-LATENCY = config('LATENCY', cast=int, default=0)
-if LATENCY:
-    print(f'Simulating latency of {LATENCY} ms')
-SESSIONS = config('SESSIONS', cast=bool, default=True)
-SESSION_COOKIE_NAME = config('SESSION_COOKIE_NAME', cast=str,
-                             default='jp_token')
-SECRET_KEY = config('SECRET_KEY',
-                    default='$$$my_secret_string$$$')  # Make sure to change when deployed
-LOGGING_LEVEL = config('LOGGING_LEVEL', default=logging.WARNING)
-JustPy.LOGGING_LEVEL = LOGGING_LEVEL
-UVICORN_LOGGING_LEVEL = config('UVICORN_LOGGING_LEVEL',
-                               default='WARNING').lower()
-COOKIE_MAX_AGE = config('COOKIE_MAX_AGE', cast=int,
-                        default=60 * 60 * 24 * 7)  # One week in seconds
 HOST = config('HOST', cast=str, default='127.0.0.1')
 PORT = config('PORT', cast=int, default=8000)
-SSL_VERSION = config('SSL_VERSION', default=PROTOCOL_SSLv23)
-SSL_KEYFILE = config('SSL_KEYFILE', default='')
-SSL_CERTFILE = config('SSL_CERTFILE', default='')
 
 TEMPLATES_DIRECTORY = config('TEMPLATES_DIRECTORY', cast=str,
                              default=current_dir + '/templates')
@@ -98,8 +77,6 @@ app.mount('/templates', StaticFiles(directory=current_dir + '/templates'),
           name='templates')
 # Handles GZip responses for any request that includes "gzip" in the Accept-Encoding header.
 app.add_middleware(GZipMiddleware)
-if SSL_KEYFILE and SSL_CERTFILE:
-    app.add_middleware(HTTPSRedirectMiddleware)
 
 
 def initial_func(request):
@@ -118,9 +95,6 @@ def server_error_func(request):
     Div(text='JustPy says: 500 - Server Error',
         classes='inline-block text-5xl m-3 p-3 text-white bg-red-600', a=wp)
     return wp
-
-
-cookie_signer = Signer(str(SECRET_KEY))
 
 
 @app.on_event('startup')
@@ -238,9 +212,6 @@ class AllPathRouter(HTTPEndpoint):
         response = templates.TemplateResponse(func_response_wp.template_file,
                                               context)
 
-        # 延遲
-        if LATENCY:
-            await asyncio.sleep(LATENCY / 1000)
         return response
 
     async def post(self, request):
@@ -261,8 +232,6 @@ class AllPathRouter(HTTPEndpoint):
                                     page_event=page_event)
         if not result:
             return JSONResponse(False)
-        if LATENCY:
-            await asyncio.sleep(LATENCY / 1000)
         return JSONResponse(result)
 
     async def on_disconnect(self, page_id):
@@ -387,8 +356,6 @@ async def handle_event(data_dict, com_type=0, page_event=False):
 
     if event_result is None:
         if com_type == 0:  # WebSockets communication
-            if LATENCY:
-                await asyncio.sleep(LATENCY / 1000)
             await p.update()
         elif com_type == 1:  # Ajax communication
             build_list = p.build_list()
@@ -423,14 +390,7 @@ def justpy(func=None, *, start_server=True, websockets=True, host=HOST,
         template_options[k.lower()] = v
 
     if start_server:
-        if SSL_KEYFILE and SSL_CERTFILE:
-            uvicorn.run(app, host=host, port=port,
-                        log_level=UVICORN_LOGGING_LEVEL, proxy_headers=True,
-                        ssl_keyfile=SSL_KEYFILE, ssl_certfile=SSL_CERTFILE,
-                        ssl_version=SSL_VERSION)
-        else:
-            uvicorn.run(app, host=host, port=port,
-                        log_level=UVICORN_LOGGING_LEVEL)
+        uvicorn.run(app, host=host, port=port)
 
     return func_to_run
 
