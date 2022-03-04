@@ -398,7 +398,6 @@ class Tailwind:
                                  '-space-y-16', '-space-y-20', '-space-y-24', '-space-y-32', '-space-y-40',
                                  '-space-y-48', '-space-y-56', '-space-y-64', '-space-y-px', 'space-x-reverse',
                                  'space-y-reverse'],
-               'animation': ['animate-none', 'animate-spin', 'animate-ping', 'animate-pulse', 'animate-bounce']
                }
     tw_reverse_dict = _create_reverse_dict(tw_dict)
 

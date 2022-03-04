@@ -20,6 +20,7 @@ from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.responses import JSONResponse
 from html.parser import HTMLParser
+# todo remove
 from .pandas import *
 import re
 from .routing import Route
@@ -40,25 +41,30 @@ LATENCY = config('LATENCY', cast=int, default=0)
 if LATENCY:
     print(f'Simulating latency of {LATENCY} ms')
 SESSIONS = config('SESSIONS', cast=bool, default=True)
-SESSION_COOKIE_NAME = config('SESSION_COOKIE_NAME', cast=str, default='jp_token')
-SECRET_KEY = config('SECRET_KEY', default='$$$my_secret_string$$$')  # Make sure to change when deployed
+SESSION_COOKIE_NAME = config('SESSION_COOKIE_NAME', cast=str,
+                             default='jp_token')
+SECRET_KEY = config('SECRET_KEY',
+                    default='$$$my_secret_string$$$')  # Make sure to change when deployed
 LOGGING_LEVEL = config('LOGGING_LEVEL', default=logging.WARNING)
 JustPy.LOGGING_LEVEL = LOGGING_LEVEL
-UVICORN_LOGGING_LEVEL = config('UVICORN_LOGGING_LEVEL', default='WARNING').lower()
-COOKIE_MAX_AGE = config('COOKIE_MAX_AGE', cast=int, default=60 * 60 * 24 * 7)  # One week in seconds
+UVICORN_LOGGING_LEVEL = config('UVICORN_LOGGING_LEVEL',
+                               default='WARNING').lower()
+COOKIE_MAX_AGE = config('COOKIE_MAX_AGE', cast=int,
+                        default=60 * 60 * 24 * 7)  # One week in seconds
 HOST = config('HOST', cast=str, default='127.0.0.1')
 PORT = config('PORT', cast=int, default=8000)
 SSL_VERSION = config('SSL_VERSION', default=PROTOCOL_SSLv23)
 SSL_KEYFILE = config('SSL_KEYFILE', default='')
 SSL_CERTFILE = config('SSL_CERTFILE', default='')
 
-TEMPLATES_DIRECTORY = config('TEMPLATES_DIRECTORY', cast=str, default=current_dir + '/templates')
+TEMPLATES_DIRECTORY = config('TEMPLATES_DIRECTORY', cast=str,
+                             default=current_dir + '/templates')
 STATIC_DIRECTORY = config('STATIC_DIRECTORY', cast=str, default=os.getcwd())
 STATIC_ROUTE = config('STATIC_MOUNT', cast=str, default='/static')
 STATIC_NAME = config('STATIC_NAME', cast=str, default='static')
-FAVICON = config('FAVICON', cast=str, default='')  # If False gets value from https://elimintz.github.io/favicon.png
+FAVICON = config('FAVICON', cast=str,
+                 default='')  # If False gets value from https://elimintz.github.io/favicon.png
 TAILWIND = config('TAILWIND', cast=bool, default=True)
-HIGHCHARTS = config('HIGHCHARTS', cast=bool, default=True)
 
 NO_INTERNET = config('NO_INTERNET', cast=bool, default=True)
 
@@ -79,7 +85,6 @@ component_file_list = create_component_file_list()
 
 template_options = {
     'tailwind': TAILWIND,
-    'highcharts': HIGHCHARTS,
     # static_name:
     #   main.html -> script path & favicon
     #   favicon.html -> shortcut
@@ -90,8 +95,10 @@ template_options = {
 }
 
 app = FastAPI(debug=DEBUG)
-app.mount(STATIC_ROUTE, StaticFiles(directory=STATIC_DIRECTORY), name=STATIC_NAME)
-app.mount('/templates', StaticFiles(directory=current_dir + '/templates'), name='templates')
+app.mount(STATIC_ROUTE, StaticFiles(directory=STATIC_DIRECTORY),
+          name=STATIC_NAME)
+app.mount('/templates', StaticFiles(directory=current_dir + '/templates'),
+          name='templates')
 # Handles GZip responses for any request that includes "gzip" in the Accept-Encoding header.
 app.add_middleware(GZipMiddleware)
 if SSL_KEYFILE and SSL_CERTFILE:
@@ -100,7 +107,8 @@ if SSL_KEYFILE and SSL_CERTFILE:
 
 def initial_func(request):
     wp = WebPage()
-    Div(text='JustPy says: Page not found', classes='inline-block text-5xl m-3 p-3 text-white bg-blue-600', a=wp)
+    Div(text='JustPy says: Page not found',
+        classes='inline-block text-5xl m-3 p-3 text-white bg-blue-600', a=wp)
     return wp
 
 
@@ -110,7 +118,8 @@ startup_func = None
 
 def server_error_func(request):
     wp = WebPage()
-    Div(text='JustPy says: 500 - Server Error', classes='inline-block text-5xl m-3 p-3 text-white bg-red-600', a=wp)
+    Div(text='JustPy says: 500 - Server Error',
+        classes='inline-block text-5xl m-3 p-3 text-white bg-red-600', a=wp)
     return wp
 
 
@@ -143,7 +152,8 @@ class AllPathRouter(HTTPEndpoint):
 
     def _check_response(self, func_response_wp):
         # 確認 func response 是不是WebPage
-        assert issubclass(type(func_response_wp), WebPage), 'Function did not return a web page'
+        assert issubclass(type(func_response_wp),
+                          WebPage), 'Function did not return a web page'
         assert \
             len(func_response_wp) > 0 or func_response_wp.html, \
             '\u001b[47;1m\033[93mWeb page is empty, add components\033[0m'
@@ -175,17 +185,20 @@ class AllPathRouter(HTTPEndpoint):
         display_url: set url in history state
         title: web site title
         redirect: redirct url
-        highcharts_theme: use highcarts theme js
         debug: debug message
         events: page events
         favcion: set favicon
         """
-        page_options = {'reload_interval': func_response_wp.reload_interval, 'body_style': func_response_wp.body_style,
-                        'body_classes': func_response_wp.body_classes, 'css': func_response_wp.css,
-                        'head_html': func_response_wp.head_html, 'body_html': func_response_wp.body_html,
+        page_options = {'reload_interval': func_response_wp.reload_interval,
+                        'body_style': func_response_wp.body_style,
+                        'body_classes': func_response_wp.body_classes,
+                        'css': func_response_wp.css,
+                        'head_html': func_response_wp.head_html,
+                        'body_html': func_response_wp.body_html,
                         'display_url': func_response_wp.display_url,
-                        'title': func_response_wp.title, 'redirect': func_response_wp.redirect,
-                        'highcharts_theme': func_response_wp.highcharts_theme, 'debug': func_response_wp.debug,
+                        'title': func_response_wp.title,
+                        'redirect': func_response_wp.redirect,
+                        'debug': func_response_wp.debug,
                         'events': func_response_wp.events,
                         'favicon': func_response_wp.favicon if func_response_wp.favicon else FAVICON}
         # todo
@@ -216,12 +229,16 @@ class AllPathRouter(HTTPEndpoint):
         route_target_func = self._get_route_target_func(request)
 
         # 確認func 參數 以及是否async
-        route_func_arg = self._get_route_func_paramter_arg(route_target_func, paramter_arg=(request,))
-        func_response_wp = await self._get_func_response_wp(route_func_arg, route_target_func)
+        route_func_arg = self._get_route_func_paramter_arg(route_target_func,
+                                                           paramter_arg=(
+                                                               request,))
+        func_response_wp = await self._get_func_response_wp(route_func_arg,
+                                                            route_target_func)
 
         context = await self._get_context(func_response_wp, request)
         # 轉成template resposne
-        response = templates.TemplateResponse(func_response_wp.template_file, context)
+        response = templates.TemplateResponse(func_response_wp.template_file,
+                                              context)
 
         # 延遲
         if LATENCY:
@@ -242,7 +259,8 @@ class AllPathRouter(HTTPEndpoint):
         msg_type = data_dict['type']
         # todo get page_event to check
         page_event = msg_type == 'page_event'
-        result = await handle_event(data_dict, com_type=1, page_event=page_event)
+        result = await handle_event(data_dict, com_type=1,
+                                    page_event=page_event)
         if not result:
             return JSONResponse(False)
         if LATENCY:
@@ -252,7 +270,8 @@ class AllPathRouter(HTTPEndpoint):
     async def on_disconnect(self, page_id):
         logger.info(f'In disconnect AllPathRouter')
         if page_id in WebPage.instances:
-            await WebPage.instances[page_id].on_disconnect()  # Run the specific page disconnect function
+            await WebPage.instances[
+                page_id].on_disconnect()  # Run the specific page disconnect function
         return JSONResponse(False)
 
 
@@ -275,14 +294,16 @@ class JustpyEvents(WebSocketEndpoint):
         logger.debug(f'Socket {websocket_id} data received: {data}')
         data_dict = json.loads(data)
         event_type = data_dict['event_type']
-        assert event_type in ['connect', 'event', 'page_event'], 'event type error'
+        assert event_type in ['connect', 'event',
+                              'page_event'], 'event type error'
         if event_type == 'connect':
             page_id = data_dict['page_id']
             await WebPage.init_websocket(page_id, websocket)
             return
 
         page_event = True if event_type == 'page_event' else False
-        WebPage.loop.create_task(handle_event(data_dict, com_type=0, page_event=page_event))
+        WebPage.loop.create_task(
+            handle_event(data_dict, com_type=0, page_event=page_event))
 
     # noinspection PyUnresolvedReferences
     async def on_disconnect(self, websocket, close_code):
@@ -295,7 +316,8 @@ class JustpyEvents(WebSocketEndpoint):
 
         if MEMORY_DEBUG:
             print('************************')
-            print('Elements: ', len(HTMLBaseComponent.instances), HTMLBaseComponent.instances)
+            print('Elements: ', len(HTMLBaseComponent.instances),
+                  HTMLBaseComponent.instances)
             print('WebPages: ', len(WebPage.instances), WebPage.instances)
             process = psutil.Process(os.getpid())
             print(f'Memory used: {process.memory_info().rss:,}')
@@ -322,7 +344,8 @@ async def handle_event(data_dict, com_type=0, page_event=False):
     CONNECTION_MAPPING = {0: 'websocket', 1: 'ajax'}
     build_list = None
 
-    logger.info(f'In event handler: {CONNECTION_MAPPING[com_type]} {str(data_dict)}')
+    logger.info(
+        f'In event handler: {CONNECTION_MAPPING[com_type]} {str(data_dict)}')
     event_data = data_dict['event_data']
     if event_data['page_id'] not in WebPage.instances:
         logger.warning('No page to load')
@@ -345,10 +368,12 @@ async def handle_event(data_dict, com_type=0, page_event=False):
         # execute on envet
         try:
             if hasattr(c, 'on_' + event_data['event_type']):
-                event_result = await c.run_event_function(event_data['event_type'], event_data, True)
+                event_result = await c.run_event_function(
+                    event_data['event_type'], event_data, True)
             else:
                 event_result = None
-                logger.debug(f'{c} has no {event_data["event_type"]} event handler')
+                logger.debug(
+                    f'{c} has no {event_data["event_type"]} event handler')
             logger.debug(f'Event result: {event_result}')
         except Exception:
             # raise Exception(e)
@@ -356,7 +381,8 @@ async def handle_event(data_dict, com_type=0, page_event=False):
                 print(traceback.format_exc())
                 sys.exit(1)
             event_result = None
-            logger.error('Event result: \u001b[47;1m\033[93mError in event handler:\033[0m')
+            logger.error(
+                'Event result: \u001b[47;1m\033[93mError in event handler:\033[0m')
             logger.error(traceback.format_exc())
 
     # If page is not to be updated, the event_function should return anything but None
@@ -373,12 +399,14 @@ async def handle_event(data_dict, com_type=0, page_event=False):
         ajax_response = {'type': 'page_update', 'data': build_list,
                          'page_options': {'display_url': p.display_url,
                                           'title': p.title,
-                                          'redirect': p.redirect, 'open': p.open,
+                                          'redirect': p.redirect,
+                                          'open': p.open,
                                           'favicon': p.favicon}}
         return ajax_response
 
 
-def justpy(func=None, *, start_server=True, websockets=True, host=HOST, port=PORT, startup=None, **kwargs):
+def justpy(func=None, *, start_server=True, websockets=True, host=HOST,
+           port=PORT, startup=None, **kwargs):
     global func_to_run, startup_func, HOST, PORT
     HOST = host
     PORT = port
@@ -398,10 +426,13 @@ def justpy(func=None, *, start_server=True, websockets=True, host=HOST, port=POR
 
     if start_server:
         if SSL_KEYFILE and SSL_CERTFILE:
-            uvicorn.run(app, host=host, port=port, log_level=UVICORN_LOGGING_LEVEL, proxy_headers=True,
-                        ssl_keyfile=SSL_KEYFILE, ssl_certfile=SSL_CERTFILE, ssl_version=SSL_VERSION)
+            uvicorn.run(app, host=host, port=port,
+                        log_level=UVICORN_LOGGING_LEVEL, proxy_headers=True,
+                        ssl_keyfile=SSL_KEYFILE, ssl_certfile=SSL_CERTFILE,
+                        ssl_version=SSL_VERSION)
         else:
-            uvicorn.run(app, host=host, port=port, log_level=UVICORN_LOGGING_LEVEL)
+            uvicorn.run(app, host=host, port=port,
+                        log_level=UVICORN_LOGGING_LEVEL)
 
     return func_to_run
 
@@ -429,7 +460,8 @@ class BasicHTMLParser(HTMLParser):
         pass
 
     # Void elements do not need closing tag
-    void_elements = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'menuitem', 'meta',
+    void_elements = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img',
+                     'input', 'keygen', 'link', 'menuitem', 'meta',
                      'param', 'source', 'track', 'wbr']
 
     def __init__(self, target=None):
@@ -472,7 +504,8 @@ class BasicHTMLParser(HTMLParser):
             cls.next_id += 1
 
         if c is None:
-            print(tag, 'No such tag, Div being used instead *****************************************')
+            print(tag,
+                  'No such tag, Div being used instead *****************************************')
             c = Div()
         for attr in attrs:
             attr = list(attr)

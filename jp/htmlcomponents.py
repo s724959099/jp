@@ -31,7 +31,6 @@ class WebPage:
     delete_flag = True
     tailwind = True
     debug = False
-    highcharts_theme = None
     websocket_reverse_mapping = {}  # websocket_id: page_id
 
     def __init__(self, **kwargs):
@@ -82,8 +81,10 @@ class WebPage:
 
         if wp and wp.run_javascripts:
             while len(wp.run_javascripts):
-                (javascript_string, request_id, send) = wp.run_javascripts.pop(0)
-                await wp.run_javascript(javascript_string=javascript_string, request_id=request_id, send=send)
+                (javascript_string, request_id, send) = wp.run_javascripts.pop(
+                    0)
+                await wp.run_javascript(javascript_string=javascript_string,
+                                        request_id=request_id, send=send)
 
     def __len__(self):
         return len(self.components)
@@ -130,7 +131,8 @@ class WebPage:
         try:
             self.components.remove(component)
         except Exception:
-            raise Exception('Component cannot be removed because it was not in Webpage')
+            raise Exception(
+                'Component cannot be removed because it was not in Webpage')
         return self
 
     def remove(self, component):
@@ -149,14 +151,16 @@ class WebPage:
         if k in self.cookies:
             del (self.cookies[str(k)])
 
-    async def run_javascript(self, javascript_string, *, request_id=None, send=True):
+    async def run_javascript(self, javascript_string, *, request_id=None,
+                             send=True):
         websocket = self.websocket
         if not websocket:
             self.run_javascripts.append(
                 (javascript_string, request_id, send)
             )
 
-        dict_to_send = {'event_type': 'run_javascript', 'data': javascript_string, 'request_id': request_id,
+        dict_to_send = {'event_type': 'run_javascript',
+                        'data': javascript_string, 'request_id': request_id,
                         'send': send}
         WebPage.loop.create_task(websocket.send_json(dict_to_send))
         return self
@@ -170,12 +174,13 @@ class WebPage:
             component_build = self.build_list()
         else:
             component_build = built_list
-        WebPage.loop.create_task(websocket.send_json({'event_type': 'page_update', 'data': component_build,
-                                                      'page_options': {'display_url': self.display_url,
-                                                                       'title': self.title,
-                                                                       'redirect': self.redirect,
-                                                                       'open': self.open,
-                                                                       'favicon': self.favicon}}))
+        WebPage.loop.create_task(websocket.send_json(
+            {'event_type': 'page_update', 'data': component_build,
+             'page_options': {'display_url': self.display_url,
+                              'title': self.title,
+                              'redirect': self.redirect,
+                              'open': self.open,
+                              'favicon': self.favicon}}))
         return self
 
     async def update(self, websocket=None):
@@ -184,7 +189,8 @@ class WebPage:
         dict_to_send = {'event_type': 'page_update', 'data': page_build,
                         'page_options': {'display_url': self.display_url,
                                          'title': self.title,
-                                         'redirect': self.redirect, 'open': self.open,
+                                         'redirect': self.redirect,
+                                         'open': self.open,
                                          'favicon': self.favicon}}
 
         WebPage.loop.create_task(websocket.send_json(dict_to_send))
@@ -218,7 +224,8 @@ class WebPage:
             object_list.append(d)
         return object_list
 
-    async def run_event_function(self, event_type, event_data, create_namespace_flag=True):
+    async def run_event_function(self, event_type, event_data,
+                                 create_namespace_flag=True):
         event_function = getattr(self, 'on_' + event_type)
         if create_namespace_flag:
             function_data = Dict(event_data)
@@ -256,18 +263,23 @@ class HTMLBaseComponent(Tailwind):
     html_tag = 'div'
     vue_type = 'html_component'  # Vue.js component name
 
-    html_global_attributes = ['accesskey', 'class', 'contenteditable', 'dir', 'draggable', 'dropzone', 'hidden', 'id',
-                              'lang', 'spellcheck', 'style', 'tabindex', 'title']
+    html_global_attributes = ['accesskey', 'class', 'contenteditable', 'dir',
+                              'draggable', 'dropzone', 'hidden', 'id',
+                              'lang', 'spellcheck', 'style', 'tabindex',
+                              'title']
 
     # 客製化的 attr，給js & python ex: vue_type, html_tag
-    attribute_list = ['id', 'vue_type', 'show', 'events', 'event_modifiers', 'class_', 'style', 'set_focus',
-                      'html_tag', 'class_name', 'event_propagation', 'inner_html', 'animation', 'debug', 'transition']
+    attribute_list = ['id', 'vue_type', 'show', 'events', 'event_modifiers',
+                      'class_', 'style', 'set_focus',
+                      'html_tag', 'class_name', 'event_propagation',
+                      'inner_html', 'debug', 'transition']
 
     # not_used_global_attributes = ['dropzone', 'translate', 'autocapitalize',
     #                               'itemid', 'itemprop', 'itemref', 'itemscope', 'itemtype']
 
     # Additions to global attributes to add to attrs dict apart from id and style.
-    used_global_attributes = ['contenteditable', 'dir', 'tabindex', 'title', 'accesskey', 'draggable', 'lang',
+    used_global_attributes = ['contenteditable', 'dir', 'tabindex', 'title',
+                              'accesskey', 'draggable', 'lang',
                               'spellcheck']
 
     def __init__(self, **kwargs):
@@ -294,7 +306,6 @@ class HTMLBaseComponent(Tailwind):
         self.class_name = type(self).__name__
         self.debug = False
         self.inner_html = ''
-        self.animation = False
         self.show = True
         self.set_focus = False
         self.class_ = ''
@@ -305,8 +316,10 @@ class HTMLBaseComponent(Tailwind):
         self.directives = []
         self.data = {}
         self.drag_options = None
-        self.allowed_events = ['click', 'mouseover', 'mouseout', 'mouseenter', 'mouseleave', 'input', 'change',
-                               'after', 'before', 'keydown', 'keyup', 'keypress', 'focus', 'blur', 'submit',
+        self.allowed_events = ['click', 'mouseover', 'mouseout', 'mouseenter',
+                               'mouseleave', 'input', 'change',
+                               'after', 'before', 'keydown', 'keyup',
+                               'keypress', 'focus', 'blur', 'submit',
                                'dragstart', 'dragover', 'drop', 'click__out']
         self.events = []
         self.event_modifiers = Dict()
@@ -415,7 +428,8 @@ class HTMLBaseComponent(Tailwind):
         for i in self.prop_list + self.attributes + HTMLBaseComponent.used_global_attributes:
             with try_save():
                 d['attrs'][i] = getattr(self, i)
-                if i in ['in', 'from']:  # Attributes that are also python reserved words
+                if i in ['in',
+                         'from']:  # Attributes that are also python reserved words
                     d['attrs'][i] = getattr(self, '_' + i)
                 if '-' in i:
                     s = i.replace('-', '_')  # kebab case to snake case
@@ -423,7 +437,8 @@ class HTMLBaseComponent(Tailwind):
 
         # scoped_slots
         for s in self.scoped_slots:
-            d['scoped_slots'][s] = self.scoped_slots[s].convert_object_to_dict()
+            d['scoped_slots'][s] = self.scoped_slots[
+                s].convert_object_to_dict()
         return d
 
     def initialize(self, **kwargs):
@@ -469,7 +484,8 @@ class HTMLBaseComponent(Tailwind):
                 HTMLBaseComponent.instances.pop(self.id)
                 self.needs_deletion = False
 
-    def on(self, event_type, func, debounce=None, throttle=None, immediate=False):
+    def on(self, event_type, func, debounce=None, throttle=None,
+           immediate=False):
         if event_type not in self.allowed_events:
             raise Exception(f'No event of type {event_type} supported')
 
@@ -482,9 +498,12 @@ class HTMLBaseComponent(Tailwind):
         if event_type not in self.events:
             self.events.append(event_type)
         if debounce:
-            self.event_modifiers[event_type].debounce = {'value': debounce, 'timeout': None, 'immediate': immediate}
+            self.event_modifiers[event_type].debounce = {'value': debounce,
+                                                         'timeout': None,
+                                                         'immediate': immediate}
         elif throttle:
-            self.event_modifiers[event_type].throttle = {'value': throttle, 'timeout': None}
+            self.event_modifiers[event_type].throttle = {'value': throttle,
+                                                         'timeout': None}
 
     def remove_event(self, event_type):
         if event_type in self.events:
@@ -551,7 +570,8 @@ class HTMLBaseComponent(Tailwind):
             model_value = self.model[0][self.model[1]]
         return model_value
 
-    async def run_event_function(self, event_type, event_data, create_namespace_flag=True):
+    async def run_event_function(self, event_type, event_data,
+                                 create_namespace_flag=True):
         event_function = getattr(self, 'on_' + event_type)
         if create_namespace_flag:
             function_data = Dict(event_data)
@@ -627,7 +647,8 @@ class Div(HTMLBaseComponent):
         try:
             self.components.remove(component)
         except Exception:
-            raise Exception('Component cannot be removed because it is not contained in element')
+            raise Exception(
+                'Component cannot be removed because it is not contained in element')
         return self
 
     def remove(self, component):
@@ -703,9 +724,12 @@ class Input(Div):
     # IMPORTANT: Scope of name of radio buttons is the whole page and not the form unless form is specified
 
     html_tag = 'input'
-    attributes = ['accept', 'alt', 'autocomplete', 'autofocus', 'checked', 'dirname', 'disabled', 'form',
-                  'formaction', 'formenctype', 'formmethod', 'formnovalidate', 'formtarget', 'height', 'list',
-                  'max', 'maxlength', 'min', 'minlength', 'multiple', 'name', 'pattern', 'placeholder', 'readonly',
+    attributes = ['accept', 'alt', 'autocomplete', 'autofocus', 'checked',
+                  'dirname', 'disabled', 'form',
+                  'formaction', 'formenctype', 'formmethod', 'formnovalidate',
+                  'formtarget', 'height', 'list',
+                  'max', 'maxlength', 'min', 'minlength', 'multiple', 'name',
+                  'pattern', 'placeholder', 'readonly',
                   'required', 'size', 'src', 'step', 'type', 'value', 'width']
 
     def __init__(self, **kwargs):
@@ -732,7 +756,8 @@ class Input(Div):
         return f'{self.__class__.__name__}(id: {self.id}, html_tag: {self.html_tag}, input_type: {self.type}, vue_type: {self.vue_type}, value: {self.value}, checked: {self.checked}, number of components: {num_components})'
 
     def before_event_handler(self, msg):
-        logging.debug('%s %s %s %s %s', 'before ', self.type, msg.event_type, msg.input_type, msg)
+        logging.debug('%s %s %s %s %s', 'before ', self.type, msg.event_type,
+                      msg.input_type, msg)
         if msg.event_type not in ['input', 'change', 'select']:
             return
         if msg.input_type == 'checkbox':
@@ -791,16 +816,19 @@ class Input(Div):
         elif self.type == 'radio':
             model_value = update_value
             if self.form:
-                Input.radio_button_set_model_update(self, self.form, model_value)
+                Input.radio_button_set_model_update(self, self.form,
+                                                    model_value)
             else:
-                Input.radio_button_set_model_update(self, self.model[0], model_value)
+                Input.radio_button_set_model_update(self, self.model[0],
+                                                    model_value)
         else:
             self.value = update_value
 
     def convert_object_to_dict(self) -> dict:
         d = super().convert_object_to_dict()
         d['debounce'] = self.debounce
-        d['input_type'] = self.type  # Needed for vue component updated life hook and event handler
+        d[
+            'input_type'] = self.type  # Needed for vue component updated life hook and event handler
         if self.type in ['text', 'textarea']:
             d['value'] = str(self.value)
         else:
@@ -808,7 +836,8 @@ class Input(Div):
         d['attrs']['value'] = self.value
         d['checked'] = self.checked
         if not self.no_events:
-            if self.type in ['radio', 'checkbox', 'select'] or self.type == 'file':
+            if self.type in ['radio', 'checkbox',
+                             'select'] or self.type == 'file':
                 # Not all browsers create input event
                 if 'change' not in self.events:
                     self.events.append('change')
@@ -847,7 +876,8 @@ class InputChangeOnly(Input):
 
 class Form(Div):
     html_tag = 'form'
-    attributes = ['accept-charset', 'action', 'autocomplete', 'enctype', 'method', 'name', 'novalidate', 'target']
+    attributes = ['accept-charset', 'action', 'autocomplete', 'enctype',
+                  'method', 'name', 'novalidate', 'target']
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -863,7 +893,8 @@ class Form(Div):
 
 class Label(Div):
     html_tag = 'label'
-    attributes = ['for', 'form']  # In JustPy these are components, not ids of component like in HTML
+    attributes = ['for',
+                  'form']  # In JustPy these are components, not ids of component like in HTML
 
     def __init__(self, **kwargs):
         self.for_component = None
@@ -884,8 +915,10 @@ class Label(Div):
 
 class Textarea(Input):
     html_tag = 'textarea'
-    attributes = ['autofocus', 'cols', 'dirname', 'disabled', 'form', 'maxlength', 'name',
-                  'placeholder', 'readonly', 'required', 'rows', 'wrap', 'value']
+    attributes = ['autofocus', 'cols', 'dirname', 'disabled', 'form',
+                  'maxlength', 'name',
+                  'placeholder', 'readonly', 'required', 'rows', 'wrap',
+                  'value']
 
     def __init__(self, **kwargs):
         self.rows = '4'
@@ -898,7 +931,8 @@ class Textarea(Input):
 class Select(Input):
     # Need to set value of select on creation, otherwise blank line will show on page update
     html_tag = 'select'
-    attributes = ['autofocus', 'disabled', 'form', 'multiple', 'name', 'required', 'size']
+    attributes = ['autofocus', 'disabled', 'form', 'multiple', 'name',
+                  'required', 'size']
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -907,7 +941,8 @@ class Select(Input):
 
 class A(Div):
     html_tag = 'a'
-    attributes = ['download', 'href', 'hreflang', 'media', 'ping', 'rel', 'target', 'type']
+    attributes = ['download', 'href', 'hreflang', 'media', 'ping', 'rel',
+                  'target', 'type']
 
     def __init__(self, **kwargs):
 
@@ -988,122 +1023,86 @@ class Space(Div):
 
 # Non html components
 
-class TabGroup(Div):
-    """
-    Displays a tab based on its value. Has a dict of tabs whose keys is the value. A tab is any JustPy component.
-
-    format of dict: {'value1': {'tab': comp1, 'order': number}, 'value2': {'tab': comp2, 'order': number} ...}
-    self.tabs - tab dict
-    self.animation_next = 'slideInRight'    set animation for tab coming in
-    self.animation_prev = 'slideOutLeft'    set animation for tab going out
-    self.animation_speed = 'faster'  can be on of  '' | 'slow' | 'slower' | 'fast'  | 'faster'
-    self.value  value of group and tab to display
-    self.previous - previous tab, no need to change except to set to '' in order to display tab without animation which is default at first
-
-    """
-
-    wrapper_classes = ' '
-    wrapper_style = 'display: flex; position: absolute; width: 100%; height: 100%;  align-items: center; justify-content: center; background-color: #fff;'
-
-    def __init__(self, **kwargs):
-
-        self.tabs = {}  # Dict with format 'value': {'tab': Div component, 'order': number} for each entry
-        self.value = ''
-        self.previous_value = ''
-        # https://github.com/daneden/animate.css
-        self.animation_next = 'slideInRight'
-        self.animation_prev = 'slideOutLeft'
-        self.animation_speed = 'faster'  # '' | 'slow' | 'slower' | 'fast'  | 'faster'
-
-        self.wrapper_div_classes = None
-        self.wrapper_div = None
-
-        super().__init__(**kwargs)
-
-    def __setattr__(self, key, value):
-        if key == 'value':
-            try:
-                self.previous_value = self.value
-            except Exception:
-                pass
-        self.__dict__[key] = value
-
-    def model_update(self):
-        self.value = self.model[0].data[self.model[1]]
-
-    def convert_object_to_dict(self) -> dict:
-        self.components = []
-        self.wrapper_div_classes = self.animation_speed  # Component in this will be centered
-
-        if self.previous_value:
-            self.wrapper_div = Div(class_=self.wrapper_div_classes, animation=self.animation_next, temp=True,
-                                   style=f'{self.__class__.wrapper_style} z-index: 50;', a=self)
-            self.wrapper_div.add(self.tabs[self.value]['tab'])
-            self.wrapper_div = Div(class_=self.wrapper_div_classes, animation=self.animation_prev, temp=True,
-                                   style=f'{self.__class__.wrapper_style} z-index: 0;', a=self)
-            self.wrapper_div.add(self.tabs[self.previous_value]['tab'])
-        else:
-            self.wrapper_div = Div(class_=self.wrapper_div_classes, temp=True, a=self,
-                                   style=self.__class__.wrapper_style)
-            self.wrapper_div.add(self.tabs[self.value]['tab'])
-
-        self.style = ' position: relative; overflow: hidden; ' + self.style  # overflow: hidden;
-        d = super().convert_object_to_dict()
-        return d
-
 
 # HTML tags for which corresponding classes will be created
-_tag_create_list = ['address', 'article', 'aside', 'footer', 'header', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'main',
+_tag_create_list = ['address', 'article', 'aside', 'footer', 'header', 'h1',
+                    'h2', 'h3', 'h4', 'h5', 'h6', 'main',
                     'nav', 'section',
-                    'blockquote', 'dd', 'dl', 'dt', 'figcaption', 'figure', 'hr', 'li', 'ol', 'p', 'pre', 'ul',
-                    'abbr', 'b', 'bdi', 'bdo', 'br', 'cite', 'code', 'data', 'dfn', 'em', 'i', 'kbd', 'mark', 'q', 'rb',
-                    'rp', 'rt', 'rtc', 'ruby', 's', 'samp', 'small', 'span', 'strong', 'sub', 'sup', 'time', 'tt', 'u',
+                    'blockquote', 'dd', 'dl', 'dt', 'figcaption', 'figure',
+                    'hr', 'li', 'ol', 'p', 'pre', 'ul',
+                    'abbr', 'b', 'bdi', 'bdo', 'br', 'cite', 'code', 'data',
+                    'dfn', 'em', 'i', 'kbd', 'mark', 'q', 'rb',
+                    'rp', 'rt', 'rtc', 'ruby', 's', 'samp', 'small', 'span',
+                    'strong', 'sub', 'sup', 'time', 'tt', 'u',
                     'var', 'wbr',
                     'area', 'audio', 'img', 'map', 'track', 'video',
                     'embed', 'iframe', 'object', 'param', 'picture', 'source',
                     'del', 'ins', 'title',
-                    'caption', 'col', 'colgroup', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr',
-                    'button', 'fieldset', 'legend', 'meter', 'optgroup', 'option', 'progress',  # datalist not supported
+                    'caption', 'col', 'colgroup', 'table', 'tbody', 'td',
+                    'tfoot', 'th', 'thead', 'tr',
+                    'button', 'fieldset', 'legend', 'meter', 'optgroup',
+                    'option', 'progress',  # datalist not supported
                     'details', 'summary', 'style'  # dialog not supported
                     ]
 
 # Only tags that have non-gloabal  attributes that are supported by HTML 5 are in this dict
-_attr_dict = {'a': ['download', 'href', 'hreflang', 'media', 'ping', 'rel', 'target', 'type'],
-              'area': ['alt', 'coords', 'download', 'href', 'hreflang', 'media', 'rel', 'shape', 'target', 'type'],
-              'audio': ['autoplay', 'controls', 'loop', 'muted', 'preload', 'src'], 'base': ['href', 'target'],
-              'bdo': ['dir'], 'blockquote': ['cite'],
-              'button': ['autofocus', 'disabled', 'form', 'formaction', 'formenctype', 'formmethod',
-                         'formnovalidate', 'formtarget', 'name', 'type', 'value'], 'canvas': ['height', 'width'],
-              'col': ['span'], 'colgroup': ['span'], 'data': ['value'], 'del': ['cite', 'datetime'],
-              'details': ['open'], 'dialog': ['open'], 'embed': ['height', 'src', 'type', 'width'],
-              'fieldset': ['disabled', 'form', 'name'],
-              'form': ['accept-charset', 'action', 'autocomplete', 'enctype', 'method', 'name', 'novalidate',
-                       'target'], 'html': ['xmlns'],
-              'iframe': ['height', 'name', 'sandbox', 'src', 'srcdoc', 'width'],
-              'img': ['alt', 'crossorigin', 'height', 'ismap', 'longdesc', 'sizes', 'src', 'srcset', 'usemap',
-                      'width'],
-              'input': ['accept', 'alt', 'autocomplete', 'autofocus', 'checked', 'dirname', 'disabled', 'form',
-                        'formaction', 'formenctype', 'formmethod', 'formnovalidate', 'formtarget', 'height', 'list',
-                        'max', 'maxlength', 'min', 'minlength', 'multiple', 'name', 'pattern', 'placeholder',
-                        'readonly',
-                        'required', 'size', 'src', 'step', 'type', 'value', 'width'], 'ins': ['cite', 'datetime'],
-              'label': ['for', 'form'], 'li': ['value'],
-              'link': ['crossorigin', 'href', 'hreflang', 'media', 'rel', 'sizes', 'type'], 'map': ['name'],
-              'meta': ['charset', 'content', 'http-equiv', 'name'],
-              'meter': ['form', 'high', 'low', 'max', 'min', 'optimum', 'value'],
-              'object': ['data', 'form', 'height', 'name', 'type', 'usemap', 'width'],
-              'ol': ['reversed', 'start', 'type'], 'optgroup': ['disabled', 'label'],
-              'option': ['disabled', 'label', 'selected', 'value'], 'output': ['for', 'form', 'name'],
-              'param': ['name', 'value'], 'progress': ['max', 'value'], 'q': ['cite'],
-              'script': ['async', 'charset', 'defer', 'src', 'type'],
-              'select': ['autofocus', 'disabled', 'form', 'multiple', 'name', 'required', 'size'],
-              'source': ['src', 'srcset', 'media', 'sizes', 'type'], 'style': ['media', 'type'],
-              'td': ['colspan', 'headers', 'rowspan'],
-              'textarea': ['autofocus', 'cols', 'dirname', 'disabled', 'form', 'maxlength', 'name', 'placeholder',
-                           'readonly', 'required', 'rows', 'wrap'],
-              'th': ['abbr', 'colspan', 'headers', 'rowspan', 'scope', 'sorted'], 'time': ['datetime'],
-              'track': ['default', 'kind', 'label', 'src', 'srclang'],
-              'video': ['autoplay', 'controls', 'height', 'loop', 'muted', 'poster', 'preload', 'src', 'width']}
+_attr_dict = {
+    'a': ['download', 'href', 'hreflang', 'media', 'ping', 'rel', 'target',
+          'type'],
+    'area': ['alt', 'coords', 'download', 'href', 'hreflang', 'media', 'rel',
+             'shape', 'target', 'type'],
+    'audio': ['autoplay', 'controls', 'loop', 'muted', 'preload', 'src'],
+    'base': ['href', 'target'],
+    'bdo': ['dir'], 'blockquote': ['cite'],
+    'button': ['autofocus', 'disabled', 'form', 'formaction', 'formenctype',
+               'formmethod',
+               'formnovalidate', 'formtarget', 'name', 'type', 'value'],
+    'canvas': ['height', 'width'],
+    'col': ['span'], 'colgroup': ['span'], 'data': ['value'],
+    'del': ['cite', 'datetime'],
+    'details': ['open'], 'dialog': ['open'],
+    'embed': ['height', 'src', 'type', 'width'],
+    'fieldset': ['disabled', 'form', 'name'],
+    'form': ['accept-charset', 'action', 'autocomplete', 'enctype', 'method',
+             'name', 'novalidate',
+             'target'], 'html': ['xmlns'],
+    'iframe': ['height', 'name', 'sandbox', 'src', 'srcdoc', 'width'],
+    'img': ['alt', 'crossorigin', 'height', 'ismap', 'longdesc', 'sizes',
+            'src', 'srcset', 'usemap',
+            'width'],
+    'input': ['accept', 'alt', 'autocomplete', 'autofocus', 'checked',
+              'dirname', 'disabled', 'form',
+              'formaction', 'formenctype', 'formmethod', 'formnovalidate',
+              'formtarget', 'height', 'list',
+              'max', 'maxlength', 'min', 'minlength', 'multiple', 'name',
+              'pattern', 'placeholder',
+              'readonly',
+              'required', 'size', 'src', 'step', 'type', 'value', 'width'],
+    'ins': ['cite', 'datetime'],
+    'label': ['for', 'form'], 'li': ['value'],
+    'link': ['crossorigin', 'href', 'hreflang', 'media', 'rel', 'sizes',
+             'type'], 'map': ['name'],
+    'meta': ['charset', 'content', 'http-equiv', 'name'],
+    'meter': ['form', 'high', 'low', 'max', 'min', 'optimum', 'value'],
+    'object': ['data', 'form', 'height', 'name', 'type', 'usemap', 'width'],
+    'ol': ['reversed', 'start', 'type'], 'optgroup': ['disabled', 'label'],
+    'option': ['disabled', 'label', 'selected', 'value'],
+    'output': ['for', 'form', 'name'],
+    'param': ['name', 'value'], 'progress': ['max', 'value'], 'q': ['cite'],
+    'script': ['async', 'charset', 'defer', 'src', 'type'],
+    'select': ['autofocus', 'disabled', 'form', 'multiple', 'name', 'required',
+               'size'],
+    'source': ['src', 'srcset', 'media', 'sizes', 'type'],
+    'style': ['media', 'type'],
+    'td': ['colspan', 'headers', 'rowspan'],
+    'textarea': ['autofocus', 'cols', 'dirname', 'disabled', 'form',
+                 'maxlength', 'name', 'placeholder',
+                 'readonly', 'required', 'rows', 'wrap'],
+    'th': ['abbr', 'colspan', 'headers', 'rowspan', 'scope', 'sorted'],
+    'time': ['datetime'],
+    'track': ['default', 'kind', 'label', 'src', 'srclang'],
+    'video': ['autoplay', 'controls', 'height', 'loop', 'muted', 'poster',
+              'preload', 'src', 'width']}
 
 
 # Name definition for static syntax analysers
@@ -1113,7 +1112,8 @@ _attr_dict = {'a': ['download', 'href', 'hreflang', 'media', 'ping', 'rel', 'tar
 def creaet_html_class_factory(tag_captitalize_name):
     return type(tag_captitalize_name.capitalize(), (Div,),
                 {'html_tag': tag_captitalize_name.lower(),
-                 'attributes': _attr_dict.get(tag_captitalize_name.lower(), [])})
+                 'attributes': _attr_dict.get(tag_captitalize_name.lower(),
+                                              [])})
 
 
 Address = creaet_html_class_factory('Address')
@@ -1213,131 +1213,210 @@ Animate = AnimateMotion = AnimateTransform = Circle = ClipPath = Defs = Desc = D
 # https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute
 
 # in, in2, mode
-svg_tags = ['a', 'animate', 'animateMotion', 'animateTransform', 'audio', 'canvas', 'circle', 'clipPath', 'defs',
-            'desc', 'discard', 'ellipse', 'feBlend', 'feColorMatrix', 'feComponentTransfer', 'feComposite',
-            'feConvolveMatrix', 'feDiffuseLighting', 'feDisplacementMap', 'feDistantLight', 'feDropShadow', 'feFlood',
-            'feFuncA', 'feFuncB', 'feFuncG', 'feFuncR', 'feGaussianBlur', 'feImage', 'feMerge', 'feMergeNode',
-            'feMorphology', 'feOffset', 'fePointLight', 'feSpecularLighting', 'feSpotLight', 'feTile', 'feTurbulence',
-            'filter', 'foreignObject', 'g', 'iframe', 'image', 'line', 'linearGradient', 'marker', 'mask', 'metadata',
-            'mpath', 'path', 'pattern', 'polygon', 'polyline', 'radialGradient', 'rect', 'script', 'set', 'stop',
-            'style', 'svg', 'switch', 'symbol', 'text', 'textPath', 'title', 'tspan', 'unknown', 'use', 'video', 'view']
+svg_tags = ['a', 'animate', 'animateMotion', 'animateTransform', 'audio',
+            'canvas', 'circle', 'clipPath', 'defs',
+            'desc', 'discard', 'ellipse', 'feBlend', 'feColorMatrix',
+            'feComponentTransfer', 'feComposite',
+            'feConvolveMatrix', 'feDiffuseLighting', 'feDisplacementMap',
+            'feDistantLight', 'feDropShadow', 'feFlood',
+            'feFuncA', 'feFuncB', 'feFuncG', 'feFuncR', 'feGaussianBlur',
+            'feImage', 'feMerge', 'feMergeNode',
+            'feMorphology', 'feOffset', 'fePointLight', 'feSpecularLighting',
+            'feSpotLight', 'feTile', 'feTurbulence',
+            'filter', 'foreignObject', 'g', 'iframe', 'image', 'line',
+            'linearGradient', 'marker', 'mask', 'metadata',
+            'mpath', 'path', 'pattern', 'polygon', 'polyline',
+            'radialGradient', 'rect', 'script', 'set', 'stop',
+            'style', 'svg', 'switch', 'symbol', 'text', 'textPath', 'title',
+            'tspan', 'unknown', 'use', 'video', 'view']
 
-svg_tags_use = ['animate', 'animateMotion', 'animateTransform', 'circle', 'clipPath', 'defs',
-                'desc', 'discard', 'ellipse', 'feBlend', 'feColorMatrix', 'feComponentTransfer', 'feComposite',
-                'feConvolveMatrix', 'feDiffuseLighting', 'feDisplacementMap', 'feDistantLight', 'feDropShadow',
+svg_tags_use = ['animate', 'animateMotion', 'animateTransform', 'circle',
+                'clipPath', 'defs',
+                'desc', 'discard', 'ellipse', 'feBlend', 'feColorMatrix',
+                'feComponentTransfer', 'feComposite',
+                'feConvolveMatrix', 'feDiffuseLighting', 'feDisplacementMap',
+                'feDistantLight', 'feDropShadow',
                 'feFlood',
-                'feFuncA', 'feFuncB', 'feFuncG', 'feFuncR', 'feGaussianBlur', 'feImage', 'feMerge', 'feMergeNode',
-                'feMorphology', 'feOffset', 'fePointLight', 'feSpecularLighting', 'feSpotLight', 'feTile',
+                'feFuncA', 'feFuncB', 'feFuncG', 'feFuncR', 'feGaussianBlur',
+                'feImage', 'feMerge', 'feMergeNode',
+                'feMorphology', 'feOffset', 'fePointLight',
+                'feSpecularLighting', 'feSpotLight', 'feTile',
                 'feTurbulence',
-                'filter', 'foreignObject', 'g', 'image', 'line', 'linearGradient', 'marker', 'mask', 'metadata',
-                'mpath', 'path', 'pattern', 'polygon', 'polyline', 'radialGradient', 'rect', 'set', 'stop',
-                'svg', 'switch', 'symbol', 'text', 'textPath', 'tspan', 'use', 'view']
+                'filter', 'foreignObject', 'g', 'image', 'line',
+                'linearGradient', 'marker', 'mask', 'metadata',
+                'mpath', 'path', 'pattern', 'polygon', 'polyline',
+                'radialGradient', 'rect', 'set', 'stop',
+                'svg', 'switch', 'symbol', 'text', 'textPath', 'tspan', 'use',
+                'view']
 
-svg_presentation_attributes = ['alignment-baseline', 'baseline-shift', 'clip', 'clip-path', 'clip-rule', 'color',
-                               'color-interpolation', 'color-interpolation-filters', 'color-profile', 'color-rendering',
-                               'cursor', 'direction', 'display', 'dominant-baseline', 'enable-background', 'fill',
-                               'fill-opacity', 'fill-rule', 'filter', 'flood-color', 'flood-opacity', 'font-family',
-                               'font-size', 'font-size-adjust', 'font-stretch', 'font-style', 'font-variant',
-                               'font-weight', 'glyph-orientation-horizontal', 'glyph-orientation-vertical',
-                               'image-rendering', 'kerning', 'letter-spacing', 'lighting-color', 'marker-end',
-                               'marker-mid', 'marker-start', 'mask', 'opacity', 'overflow', 'pointer-events',
-                               'shape-rendering', 'stop-color', 'stop-opacity', 'stroke', 'stroke-dasharray',
-                               'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin', 'stroke-miterlimit',
-                               'stroke-opacity', 'stroke-width', 'text-anchor', 'transform', 'text-decoration',
-                               'text-rendering', 'unicode-bidi', 'vector-effect', 'visibility', 'word-spacing',
+svg_presentation_attributes = ['alignment-baseline', 'baseline-shift', 'clip',
+                               'clip-path', 'clip-rule', 'color',
+                               'color-interpolation',
+                               'color-interpolation-filters', 'color-profile',
+                               'color-rendering',
+                               'cursor', 'direction', 'display',
+                               'dominant-baseline', 'enable-background',
+                               'fill',
+                               'fill-opacity', 'fill-rule', 'filter',
+                               'flood-color', 'flood-opacity', 'font-family',
+                               'font-size', 'font-size-adjust', 'font-stretch',
+                               'font-style', 'font-variant',
+                               'font-weight', 'glyph-orientation-horizontal',
+                               'glyph-orientation-vertical',
+                               'image-rendering', 'kerning', 'letter-spacing',
+                               'lighting-color', 'marker-end',
+                               'marker-mid', 'marker-start', 'mask', 'opacity',
+                               'overflow', 'pointer-events',
+                               'shape-rendering', 'stop-color', 'stop-opacity',
+                               'stroke', 'stroke-dasharray',
+                               'stroke-dashoffset', 'stroke-linecap',
+                               'stroke-linejoin', 'stroke-miterlimit',
+                               'stroke-opacity', 'stroke-width', 'text-anchor',
+                               'transform', 'text-decoration',
+                               'text-rendering', 'unicode-bidi',
+                               'vector-effect', 'visibility', 'word-spacing',
                                'writing-mode',
-                               'cx', 'cy', 'r', 'rx', 'ry', 'd', 'fill', 'transform']
+                               'cx', 'cy', 'r', 'rx', 'ry', 'd', 'fill',
+                               'transform']
 
-svg_filter_attributes = ['height', 'result', 'width', 'x', 'y', 'type', 'tableValues', 'slope', 'intercept',
+svg_filter_attributes = ['height', 'result', 'width', 'x', 'y', 'type',
+                         'tableValues', 'slope', 'intercept',
                          'amplitude', 'exponent', 'offset', 'xlink:href']
 
-svg_animation_attributes = ['attributeType', 'attributeName', 'begin', 'dur', 'end', 'min', 'max', 'restart',
-                            'repeatCount', 'repeatDur', 'fill', 'calcMode', 'values', 'keyTimes', 'keySplines', 'from',
-                            'to', 'by', 'additive', 'accumulate']
-
-svg_attr_dict = {'a': ['download', 'requiredExtensions', 'role', 'systemLanguage'],
-                 'animate': ['accumulate', 'additive', 'attributeName', 'begin', 'by', 'calcMode', 'dur', 'end', 'fill',
-                             'from', 'href', 'keySplines', 'keyTimes', 'max', 'min', 'repeatCount', 'repeatDur',
-                             'requiredExtensions', 'restart', 'systemLanguage', 'to', 'values'],
-                 'animateMotion': ['accumulate', 'additive', 'begin', 'by', 'calcMode', 'dur', 'end', 'fill', 'from',
-                                   'href', 'keyPoints', 'keySplines', 'keyTimes', 'max', 'min', 'origin', 'path',
-                                   'repeatCount', 'repeatDur', 'requiredExtensions', 'restart', 'rotate',
-                                   'systemLanguage', 'to', 'values'],
-                 'animateTransform': ['accumulate', 'additive', 'attributeName', 'begin', 'by', 'calcMode', 'dur',
-                                      'end', 'fill', 'from', 'href', 'keySplines', 'keyTimes', 'max', 'min',
-                                      'repeatCount', 'repeatDur', 'requiredExtensions', 'restart', 'systemLanguage',
-                                      'to', 'type', 'values'],
-                 'audio': ['requiredExtensions', 'role', 'systemLanguage'],
-                 'canvas': ['preserveAspectRatio', 'requiredExtensions', 'role', 'systemLanguage'],
-                 'circle': ['pathLength', 'requiredExtensions', 'role', 'systemLanguage'],
-                 'clipPath': ['clipPathUnits', 'requiredExtensions', 'systemLanguage'],
-                 'discard': ['begin', 'href', 'requiredExtensions', 'role', 'systemLanguage'],
-                 'ellipse': ['pathLength', 'requiredExtensions', 'role', 'systemLanguage'],
-                 'feBlend': ['height', 'in', 'in2', 'mode', 'result', 'width', 'x', 'y'],
-                 'feColorMatrix': ['height', 'in', 'result', 'type', 'values', 'width', 'x', 'y'],
-                 'feComponentTransfer': ['height', 'in', 'result', 'width', 'x', 'y'],
-                 'feComposite': ['height', 'in', 'in2', 'k1', 'k2', 'k3', 'k4', 'operator', 'result', 'width', 'x',
-                                 'y'],
-                 'feConvolveMatrix': ['bias', 'divisor', 'edgeMode', 'height', 'in', 'kernelMatrix', 'kernelUnitLength',
-                                      'order', 'preserveAlpha', 'result', 'targetX', 'targetY', 'width', 'x', 'y'],
-                 'feDiffuseLighting': ['diffuseConstant', 'height', 'in', 'kernelUnitLength', 'result', 'surfaceScale',
-                                       'width', 'x', 'y'],
-                 'feDisplacementMap': ['height', 'in', 'in2', 'result', 'scale', 'width', 'x', 'xChannelSelector', 'y',
-                                       'yChannelSelector'], 'feDistantLight': ['azimuth', 'elevation'],
-                 'feDropShadow': ['dx', 'dy', 'height', 'in', 'result', 'stdDeviation', 'width', 'x', 'y'],
-                 'feFlood': ['height', 'result', 'width', 'x', 'y'],
-                 'feFuncA': ['amplitude', 'exponent', 'intercept', 'offset', 'slope', 'tableValues', 'type'],
-                 'feFuncB': ['amplitude', 'exponent', 'intercept', 'offset', 'slope', 'tableValues', 'type'],
-                 'feFuncG': ['amplitude', 'exponent', 'intercept', 'offset', 'slope', 'tableValues', 'type'],
-                 'feFuncR': ['amplitude', 'exponent', 'intercept', 'offset', 'slope', 'tableValues', 'type'],
-                 'feGaussianBlur': ['edgeMode', 'height', 'in', 'result', 'stdDeviation', 'width', 'x', 'y'],
-                 'feImage': ['crossorigin', 'height', 'href', 'preserveAspectRatio', 'result', 'width', 'x', 'y'],
-                 'feMerge': ['height', 'result', 'width', 'x', 'y'], 'feMergeNode': ['in'],
-                 'feMorphology': ['height', 'in', 'operator', 'radius', 'result', 'width', 'x', 'y'],
-                 'feOffset': ['dx', 'dy', 'height', 'in', 'result', 'width', 'x', 'y'], 'fePointLight': ['x', 'y', 'z'],
-                 'feSpecularLighting': ['height', 'in', 'kernelUnitLength', 'result', 'specularConstant',
-                                        'specularExponent', 'surfaceScale', 'width', 'x', 'y'],
-                 'feSpotLight': ['limitingConeAngle', 'pointsAtX', 'pointsAtY', 'pointsAtZ', 'specularExponent', 'x',
-                                 'y', 'z'], 'feTile': ['height', 'in', 'result', 'width', 'x', 'y'],
-                 'feTurbulence': ['baseFrequency', 'height', 'numOctaves', 'result', 'seed', 'stitchTiles', 'type',
-                                  'width', 'x', 'y'],
-                 'filter': ['filterUnits', 'height', 'primitiveUnits', 'width', 'x', 'y'],
-                 'foreignObject': ['requiredExtensions', 'role', 'systemLanguage'],
-                 'g': ['requiredExtensions', 'role', 'systemLanguage'],
-                 'iframe': ['requiredExtensions', 'role', 'systemLanguage'],
-                 'image': ['crossorigin', 'href', 'preserveAspectRatio', 'requiredExtensions', 'role',
-                           'systemLanguage'],
-                 'line': ['pathLength', 'requiredExtensions', 'role', 'systemLanguage', 'x1', 'x2', 'y1', 'y2'],
-                 'linearGradient': ['gradientTransform', 'gradientUnits', 'href', 'spreadMethod', 'x1', 'x2', 'y1',
-                                    'y2'],
-                 'marker': ['markerHeight', 'markerUnits', 'markerWidth', 'orient', 'preserveAspectRatio', 'refX',
-                            'refY', 'viewBox'],
-                 'mask': ['height', 'maskContentUnits', 'maskUnits', 'requiredExtensions', 'systemLanguage', 'width',
-                          'x', 'y'], 'mpath': ['href'],
-                 'path': ['pathLength', 'requiredExtensions', 'role', 'systemLanguage'],
-                 'pattern': ['height', 'href', 'patternContentUnits', 'patternTransform', 'patternUnits',
-                             'preserveAspectRatio', 'viewBox', 'width', 'x', 'y'],
-                 'polygon': ['pathLength', 'points', 'requiredExtensions', 'role', 'systemLanguage'],
-                 'polyline': ['pathLength', 'points', 'requiredExtensions', 'role', 'systemLanguage'],
-                 'radialGradient': ['cx', 'cy', 'fr', 'fx', 'fy', 'gradientTransform', 'gradientUnits', 'href', 'r',
-                                    'spreadMethod'],
-                 'rect': ['pathLength', 'requiredExtensions', 'role', 'systemLanguage'], 'script': ['href'],
-                 'set': ['attributeName', 'begin', 'dur', 'end', 'fill', 'href', 'max', 'min', 'repeatCount',
-                         'repeatDur', 'requiredExtensions', 'restart', 'systemLanguage', 'to'], 'stop': ['offset'],
-                 'style': ['media'],
-                 'svg': ['playbackorder', 'preserveAspectRatio', 'requiredExtensions', 'role', 'systemLanguage',
-                         'timelinebegin', 'transform', 'viewBox', 'zoomAndPan', 'xmlns', 'version'],
-                 'switch': ['requiredExtensions', 'role', 'systemLanguage'],
-                 'symbol': ['preserveAspectRatio', 'refX', 'refY', 'role', 'viewBox'],
-                 'text': ['dx', 'dy', 'lengthAdjust', 'requiredExtensions', 'role', 'rotate', 'systemLanguage',
-                          'textLength', 'x', 'y'],
-                 'textPath': ['href', 'lengthAdjust', 'method', 'path', 'requiredExtensions', 'role', 'side', 'spacing',
-                              'startOffset', 'systemLanguage', 'textLength'],
-                 'tspan': ['dx', 'dy', 'lengthAdjust', 'requiredExtensions', 'role', 'rotate', 'systemLanguage',
-                           'textLength', 'x', 'y'], 'unknown': ['requiredExtensions', 'role', 'systemLanguage'],
-                 'use': ['href', 'requiredExtensions', 'role', 'systemLanguage'],
-                 'video': ['requiredExtensions', 'role', 'systemLanguage'],
-                 'view': ['preserveAspectRatio', 'role', 'viewBox', 'zoomAndPan']}
+svg_attr_dict = {
+    'a': ['download', 'requiredExtensions', 'role', 'systemLanguage'],
+    'animate': ['accumulate', 'additive', 'attributeName', 'begin', 'by',
+                'calcMode', 'dur', 'end', 'fill',
+                'from', 'href', 'keySplines', 'keyTimes', 'max', 'min',
+                'repeatCount', 'repeatDur',
+                'requiredExtensions', 'restart', 'systemLanguage', 'to',
+                'values'],
+    'animateMotion': ['accumulate', 'additive', 'begin', 'by', 'calcMode',
+                      'dur', 'end', 'fill', 'from',
+                      'href', 'keyPoints', 'keySplines', 'keyTimes', 'max',
+                      'min', 'origin', 'path',
+                      'repeatCount', 'repeatDur', 'requiredExtensions',
+                      'restart', 'rotate',
+                      'systemLanguage', 'to', 'values'],
+    'animateTransform': ['accumulate', 'additive', 'attributeName', 'begin',
+                         'by', 'calcMode', 'dur',
+                         'end', 'fill', 'from', 'href', 'keySplines',
+                         'keyTimes', 'max', 'min',
+                         'repeatCount', 'repeatDur', 'requiredExtensions',
+                         'restart', 'systemLanguage',
+                         'to', 'type', 'values'],
+    'audio': ['requiredExtensions', 'role', 'systemLanguage'],
+    'canvas': ['preserveAspectRatio', 'requiredExtensions', 'role',
+               'systemLanguage'],
+    'circle': ['pathLength', 'requiredExtensions', 'role', 'systemLanguage'],
+    'clipPath': ['clipPathUnits', 'requiredExtensions', 'systemLanguage'],
+    'discard': ['begin', 'href', 'requiredExtensions', 'role',
+                'systemLanguage'],
+    'ellipse': ['pathLength', 'requiredExtensions', 'role', 'systemLanguage'],
+    'feBlend': ['height', 'in', 'in2', 'mode', 'result', 'width', 'x', 'y'],
+    'feColorMatrix': ['height', 'in', 'result', 'type', 'values', 'width', 'x',
+                      'y'],
+    'feComponentTransfer': ['height', 'in', 'result', 'width', 'x', 'y'],
+    'feComposite': ['height', 'in', 'in2', 'k1', 'k2', 'k3', 'k4', 'operator',
+                    'result', 'width', 'x',
+                    'y'],
+    'feConvolveMatrix': ['bias', 'divisor', 'edgeMode', 'height', 'in',
+                         'kernelMatrix', 'kernelUnitLength',
+                         'order', 'preserveAlpha', 'result', 'targetX',
+                         'targetY', 'width', 'x', 'y'],
+    'feDiffuseLighting': ['diffuseConstant', 'height', 'in',
+                          'kernelUnitLength', 'result', 'surfaceScale',
+                          'width', 'x', 'y'],
+    'feDisplacementMap': ['height', 'in', 'in2', 'result', 'scale', 'width',
+                          'x', 'xChannelSelector', 'y',
+                          'yChannelSelector'],
+    'feDistantLight': ['azimuth', 'elevation'],
+    'feDropShadow': ['dx', 'dy', 'height', 'in', 'result', 'stdDeviation',
+                     'width', 'x', 'y'],
+    'feFlood': ['height', 'result', 'width', 'x', 'y'],
+    'feFuncA': ['amplitude', 'exponent', 'intercept', 'offset', 'slope',
+                'tableValues', 'type'],
+    'feFuncB': ['amplitude', 'exponent', 'intercept', 'offset', 'slope',
+                'tableValues', 'type'],
+    'feFuncG': ['amplitude', 'exponent', 'intercept', 'offset', 'slope',
+                'tableValues', 'type'],
+    'feFuncR': ['amplitude', 'exponent', 'intercept', 'offset', 'slope',
+                'tableValues', 'type'],
+    'feGaussianBlur': ['edgeMode', 'height', 'in', 'result', 'stdDeviation',
+                       'width', 'x', 'y'],
+    'feImage': ['crossorigin', 'height', 'href', 'preserveAspectRatio',
+                'result', 'width', 'x', 'y'],
+    'feMerge': ['height', 'result', 'width', 'x', 'y'], 'feMergeNode': ['in'],
+    'feMorphology': ['height', 'in', 'operator', 'radius', 'result', 'width',
+                     'x', 'y'],
+    'feOffset': ['dx', 'dy', 'height', 'in', 'result', 'width', 'x', 'y'],
+    'fePointLight': ['x', 'y', 'z'],
+    'feSpecularLighting': ['height', 'in', 'kernelUnitLength', 'result',
+                           'specularConstant',
+                           'specularExponent', 'surfaceScale', 'width', 'x',
+                           'y'],
+    'feSpotLight': ['limitingConeAngle', 'pointsAtX', 'pointsAtY', 'pointsAtZ',
+                    'specularExponent', 'x',
+                    'y', 'z'],
+    'feTile': ['height', 'in', 'result', 'width', 'x', 'y'],
+    'feTurbulence': ['baseFrequency', 'height', 'numOctaves', 'result', 'seed',
+                     'stitchTiles', 'type',
+                     'width', 'x', 'y'],
+    'filter': ['filterUnits', 'height', 'primitiveUnits', 'width', 'x', 'y'],
+    'foreignObject': ['requiredExtensions', 'role', 'systemLanguage'],
+    'g': ['requiredExtensions', 'role', 'systemLanguage'],
+    'iframe': ['requiredExtensions', 'role', 'systemLanguage'],
+    'image': ['crossorigin', 'href', 'preserveAspectRatio',
+              'requiredExtensions', 'role',
+              'systemLanguage'],
+    'line': ['pathLength', 'requiredExtensions', 'role', 'systemLanguage',
+             'x1', 'x2', 'y1', 'y2'],
+    'linearGradient': ['gradientTransform', 'gradientUnits', 'href',
+                       'spreadMethod', 'x1', 'x2', 'y1',
+                       'y2'],
+    'marker': ['markerHeight', 'markerUnits', 'markerWidth', 'orient',
+               'preserveAspectRatio', 'refX',
+               'refY', 'viewBox'],
+    'mask': ['height', 'maskContentUnits', 'maskUnits', 'requiredExtensions',
+             'systemLanguage', 'width',
+             'x', 'y'], 'mpath': ['href'],
+    'path': ['pathLength', 'requiredExtensions', 'role', 'systemLanguage'],
+    'pattern': ['height', 'href', 'patternContentUnits', 'patternTransform',
+                'patternUnits',
+                'preserveAspectRatio', 'viewBox', 'width', 'x', 'y'],
+    'polygon': ['pathLength', 'points', 'requiredExtensions', 'role',
+                'systemLanguage'],
+    'polyline': ['pathLength', 'points', 'requiredExtensions', 'role',
+                 'systemLanguage'],
+    'radialGradient': ['cx', 'cy', 'fr', 'fx', 'fy', 'gradientTransform',
+                       'gradientUnits', 'href', 'r',
+                       'spreadMethod'],
+    'rect': ['pathLength', 'requiredExtensions', 'role', 'systemLanguage'],
+    'script': ['href'],
+    'set': ['attributeName', 'begin', 'dur', 'end', 'fill', 'href', 'max',
+            'min', 'repeatCount',
+            'repeatDur', 'requiredExtensions', 'restart', 'systemLanguage',
+            'to'], 'stop': ['offset'],
+    'style': ['media'],
+    'svg': ['playbackorder', 'preserveAspectRatio', 'requiredExtensions',
+            'role', 'systemLanguage',
+            'timelinebegin', 'transform', 'viewBox', 'zoomAndPan', 'xmlns',
+            'version'],
+    'switch': ['requiredExtensions', 'role', 'systemLanguage'],
+    'symbol': ['preserveAspectRatio', 'refX', 'refY', 'role', 'viewBox'],
+    'text': ['dx', 'dy', 'lengthAdjust', 'requiredExtensions', 'role',
+             'rotate', 'systemLanguage',
+             'textLength', 'x', 'y'],
+    'textPath': ['href', 'lengthAdjust', 'method', 'path',
+                 'requiredExtensions', 'role', 'side', 'spacing',
+                 'startOffset', 'systemLanguage', 'textLength'],
+    'tspan': ['dx', 'dy', 'lengthAdjust', 'requiredExtensions', 'role',
+              'rotate', 'systemLanguage',
+              'textLength', 'x', 'y'],
+    'unknown': ['requiredExtensions', 'role', 'systemLanguage'],
+    'use': ['href', 'requiredExtensions', 'role', 'systemLanguage'],
+    'video': ['requiredExtensions', 'role', 'systemLanguage'],
+    'view': ['preserveAspectRatio', 'role', 'viewBox', 'zoomAndPan']}
 
 for tag in svg_tags_use:
     c_tag = tag[0].capitalize() + tag[1:]

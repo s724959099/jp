@@ -25,7 +25,6 @@ page_id->WebPage
  'class_name',
  'event_propagation',
  'inner_html',
- 'animation',
  'debug',
  'transition',
  'directives',
@@ -34,7 +33,6 @@ page_id->WebPage
  'text']
 
 
-animation: false
 attrs: (...)
 class_name: (...)
 classes: (...)

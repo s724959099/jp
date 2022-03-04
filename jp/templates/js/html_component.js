@@ -170,22 +170,6 @@ Vue.component('html_component', {
         eventHandler(this.$props, event, false);
       }
     }),
-    animateFunction: (function () {
-      let animation = this.$props.jp_props.animation;
-      let element = this.$el;
-      element.classList.add('animated', animation);
-      element.classList.remove('hidden');
-      let event_func = function () {
-        element.classList.remove('animated', animation);
-        if (animation.includes('Out')) {
-          element.classList.add('hidden');
-        } else {
-          // element.classList.remove('hidden');
-        }
-        element.removeEventListener('animationend', event_func);
-      };
-      element.addEventListener('animationend', event_func);
-    }),
     transitionFunction: (function () {
       let el = this.$refs['r' + this.$props.jp_props.id];
       const props = this.$props.jp_props;
@@ -264,8 +248,6 @@ Vue.component('html_component', {
     const el = this.$refs['r' + this.$props.jp_props.id];
     const props = this.$props.jp_props;
 
-    if (props.animation)
-      this.animateFunction();
     if (props.id && props.transition && props.transition.load)
       this.transitionLoadFunction();
 
@@ -316,8 +298,6 @@ Vue.component('html_component', {
     const el = this.$refs['r' + this.$props.jp_props.id];
     const props = this.$props.jp_props;
 
-    if (props.animation)
-      this.animateFunction();
     if (this.$props.jp_props.id && props.transition)
       this.transitionFunction();
 

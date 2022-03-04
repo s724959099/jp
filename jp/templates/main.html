@@ -1,5 +1,6 @@
 {% for file_name in template_options.component_file_list %}
-  <script src={{ url_for(template_options.static_name, path=file_name) }}></script>
+  <script
+    src={{ url_for(template_options.static_name, path=file_name) }}></script>
 {% endfor %}
 
 <script>
@@ -13,8 +14,6 @@
   {#todo #}
   {% include 'js/event_handler.js' %}
   {% include 'js/html_component.js' %}
-  {% include 'js/chartjp.js' %}
-  {% include 'js/editorjp.js' %}
 
   {% if page_options.title is not none %}
     document.title = '{{ page_options.title }}';
@@ -118,62 +117,6 @@
         case 'run_javascript':
           eval(msg.data);
           break;
-        // for high chart
-        case 'draw_crosshair':
-          // Remove previous crosshairs
-          for (let i = 0; i < crosshairs.length; i++) {
-            crosshairs[i].destroy();
-          }
-          crosshairs = [];
-          for (let i = 0; i < msg.data.length; i++) {
-            const m = msg.data[i];
-            const chart_index = document.getElementById(m.id.toString()).getAttribute('data-highcharts-chart');
-            const chart = Highcharts.charts[chart_index];
-            const point = chart.series[m.series].data[m.point];
-            draw_crosshair(chart, chart.series[m.series], point);
-          }
-          break;
-        // for high chart
-        case 'select_point':
-          for (let i = 0; i < msg.data.length; i++) {
-            const m = msg.data[i];
-            const chart_index = document.getElementById(m.id.toString()).getAttribute('data-highcharts-chart');
-            const chart = Highcharts.charts[chart_index];
-            chart.series[m.series].data[m.point].select();
-          }
-          break;
-        // for high chart
-        case 'chart_update':
-          const chart = cached_graph_def['chart' + msg.id];
-          chart.update(msg.data);
-          break;
-        // for high chart
-        case 'tooltip_update':
-          // https://github.com/highcharts/highcharts/issues/6824
-          let chart_on = cached_graph_def['chart' + msg.id];
-
-          if (chart_on.options.tooltip.split) {
-            chart_on.tooltip.tt.attr({
-              text: msg.data[0]
-            });
-
-            let j = 1;
-            for (let i = 0; i < chart_on.tooltip.chart.series.length; i++) {
-              if (chart_on.tooltip.chart.series[i].visible &&
-                (chart_on.tooltip.chart.series[i].tt != null)) {
-                chart_on.tooltip.chart.series[i].tt.attr({
-                  text: msg.data[j++]
-                });
-
-              }
-            }
-
-          } else {
-            chart_on.tooltip.label.attr({
-              text: msg.data
-            });
-          }
-          break;
         default: {
 
         }
@@ -191,26 +134,6 @@
     });
   }
 
-
-  function draw_crosshair(chart, series, point) {
-
-    var
-      r = chart.renderer,
-      left = chart.plotLeft,
-      top = chart.plotTop,
-      width = chart.plotWidth,
-      height = chart.plotHeight,
-      x = point.plotX,
-      y = point.plotY;
-
-    let crosshair = r.path(['M', left, top + y, 'L', left + width, top + y, 'M', left + x, top, 'L', left + x, top + height])
-      .attr({
-        'stroke-width': 1,
-        stroke: '#D3D3D3'
-      })
-      .add();
-    crosshairs.push(crosshair);
-  }
 
   let app1 = new Vue({
     el: '#components',
@@ -240,7 +163,10 @@
         url: "/zzz_justpy_ajax",
         data: JSON.stringify({
           'type': 'event',
-          'event_data': {'event_type': 'page_update', 'page_id': {{ page_id | safe }}}
+          'event_data': {
+            'event_type': 'page_update',
+            'page_id': {{ page_id | safe }}
+          }
         }),
         success: function (msg) {
           if (msg) app1.justpyComponents = msg.data;
