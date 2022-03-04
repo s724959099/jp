@@ -5,9 +5,7 @@ import uvicorn
 @jp.SetRoute('/')
 async def demo():
     wp = jp.WebPage()
-    pagination = jp.Pagination(10, 15)
-    await wp.run_javascript(f'console.log("yooo {wp.page_id}");')
-    wp.add(pagination)
+    # await wp.run_javascript(f'console.log("yooo {wp.page_id}");')
     return wp
 
 

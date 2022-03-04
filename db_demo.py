@@ -27,8 +27,6 @@ def db_test(request):
     # s = jp.QSelect(options=table_names, a=wp, label="Select Table", outlined=True, input=selected_event,
     #                style='width: 350px; margin: 0.25rem; padding: 0.25rem;', value=table_name)
     g = tables[table_name].jp.ag_grid(a=wp, style='height: 90vh; width: 99%; margin: 0.25rem; padding: 0.25rem;')
-    g.options.pagination = True
-    g.options.paginationAutoPageSize = True
     wp.g = g
     return wp
 

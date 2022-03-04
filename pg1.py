@@ -5,8 +5,6 @@ import uvicorn
 @jp.SetRoute('/')
 def demo():
     wp = jp.WebPage()
-    pagination = jp.Pagination(10, 15)
-    wp.add(pagination)
     return wp
 
 
