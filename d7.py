@@ -14,5 +14,4 @@ async def demo():
 app = jp.app
 
 if __name__ == '__main__':
-    jp.WebPage.use_websockets = False
     uvicorn.run('d7:app', debug=True)

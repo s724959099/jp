@@ -44,7 +44,6 @@ class WebPage:
         self.display_url = None
         self.redirect = None
         self.open = None
-        self.favicon = None
         self.components = []  # list of direct children components on page
         self.cookies = {}
         self.css = ''
@@ -180,7 +179,7 @@ class WebPage:
                               'title': self.title,
                               'redirect': self.redirect,
                               'open': self.open,
-                              'favicon': self.favicon}}))
+                              }}))
         return self
 
     async def update(self, websocket=None):
@@ -191,7 +190,7 @@ class WebPage:
                                          'title': self.title,
                                          'redirect': self.redirect,
                                          'open': self.open,
-                                         'favicon': self.favicon}}
+                                         }}
 
         WebPage.loop.create_task(websocket.send_json(dict_to_send))
         return self

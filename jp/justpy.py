@@ -2,6 +2,7 @@
 import json
 from contextlib import asynccontextmanager
 from ssl import PROTOCOL_SSLv23
+from fastapi.responses import Response
 
 import fnmatch
 import os
@@ -62,8 +63,6 @@ TEMPLATES_DIRECTORY = config('TEMPLATES_DIRECTORY', cast=str,
 STATIC_DIRECTORY = config('STATIC_DIRECTORY', cast=str, default=os.getcwd())
 STATIC_ROUTE = config('STATIC_MOUNT', cast=str, default='/static')
 STATIC_NAME = config('STATIC_NAME', cast=str, default='static')
-FAVICON = config('FAVICON', cast=str,
-                 default='')  # If False gets value from https://elimintz.github.io/favicon.png
 TAILWIND = config('TAILWIND', cast=bool, default=True)
 
 NO_INTERNET = config('NO_INTERNET', cast=bool, default=True)
@@ -86,8 +85,6 @@ component_file_list = create_component_file_list()
 template_options = {
     'tailwind': TAILWIND,
     # static_name:
-    #   main.html -> script path & favicon
-    #   favicon.html -> shortcut
     'static_name': STATIC_NAME,
     # script file name list
     'component_file_list': component_file_list,
@@ -187,7 +184,6 @@ class AllPathRouter(HTTPEndpoint):
         redirect: redirct url
         debug: debug message
         events: page events
-        favcion: set favicon
         """
         page_options = {'reload_interval': func_response_wp.reload_interval,
                         'body_style': func_response_wp.body_style,
@@ -200,7 +196,7 @@ class AllPathRouter(HTTPEndpoint):
                         'redirect': func_response_wp.redirect,
                         'debug': func_response_wp.debug,
                         'events': func_response_wp.events,
-                        'favicon': func_response_wp.favicon if func_response_wp.favicon else FAVICON}
+                        }
         # todo
         page_dict = func_response_wp.cache if func_response_wp.use_cache else func_response_wp.build_list()
         """
@@ -226,6 +222,8 @@ class AllPathRouter(HTTPEndpoint):
 
     async def get(self, request):
         # 使用自己寫的Route 取得mapping 的 route & function
+        if request['path'] == '/favicon.ico':
+            return Response(status_code=404)
         route_target_func = self._get_route_target_func(request)
 
         # 確認func 參數 以及是否async
@@ -401,7 +399,7 @@ async def handle_event(data_dict, com_type=0, page_event=False):
                                           'title': p.title,
                                           'redirect': p.redirect,
                                           'open': p.open,
-                                          'favicon': p.favicon}}
+                                          }}
         return ajax_response
 
 

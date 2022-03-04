@@ -99,17 +99,6 @@
           if (msg.page_options.display_url !== null)
             window.history.pushState("", "", msg.page_options.display_url);
           document.title = msg.page_options.title;
-          if (msg.page_options.favicon) {
-            let link = document.querySelector("link[rel*='icon']") || document.createElement('link');
-            link.type = 'image/x-icon';
-            link.rel = 'shortcut icon';
-            if (msg.page_options.favicon.startsWith('http')) {
-              link.href = msg.page_options.favicon;
-            } else {
-              link.href = '{{ url_for(template_options.static_name, path='/') }}' + msg.page_options.favicon;
-            }
-            document.getElementsByTagName('head')[0].appendChild(link);
-          }
 
           app1.justpyComponents = msg.data;
 
